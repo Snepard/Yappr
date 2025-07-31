@@ -1,16 +1,17 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { Socket } from "dgram";
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173"]
+        origin: process.env.NODE_ENV === "production" 
+            ? [process.env.CLIENT_URL || "https://your-app-name.onrender.com"] // Replace with your actual Render URL
+            : ["http://localhost:5173"]
     }
-})
+});
 
 export function getReceiverSocketId(userID) {
     return userSocketMap[userID];
@@ -33,4 +34,4 @@ io.on("connection", (socket) => {
     });
 });
 
-export { io, app, server};
+export { io, app, server };
