@@ -86,16 +86,24 @@ const Sidebar = () => {
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
+  // Hide sidebar on mobile when a user is selected
+  const shouldHideSidebar = selectedUser && typeof window !== 'undefined' && window.innerWidth < 1024;
+
   return (
-    <aside className="h-full w-20 lg:w-80 border-r border-gray-200/50 flex flex-col bg-white/90 backdrop-blur-xl">
-      <div className="border-b border-gray-200/50 p-5 bg-gradient-to-r from-purple-50/50 to-blue-50/50">
-        <div className="flex items-center gap-3 mb-5">
+    <aside className={`h-full transition-all duration-300 border-r border-gray-200/50 flex flex-col bg-white/90 backdrop-blur-xl
+      ${shouldHideSidebar ? 'hidden' : 'flex'}
+      ${selectedUser ? 'w-0 lg:w-80' : 'w-full lg:w-80'}
+      ${!selectedUser ? 'lg:min-w-80' : ''}
+    `}>
+      <div className="border-b border-gray-200/50 p-4 lg:p-5 bg-gradient-to-r from-purple-50/50 to-blue-50/50">
+        {/* Profile Section */}
+        <div className="flex items-center gap-3 mb-4 lg:mb-5">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              className="p-1 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl shadow-sm h-13 w-13 
+              className="p-1 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl shadow-sm h-12 w-12 lg:h-13 lg:w-13 
                          hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20
-                         relative group cursor-pointer"
+                         relative group cursor-pointer flex-shrink-0"
             >
               <img 
                 src={authUser?.profilePic || "/avatar.png"} 
@@ -103,7 +111,7 @@ const Sidebar = () => {
                 className="w-full h-full object-cover rounded-3xl"
               />
               <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm group-hover:bg-purple-50 transition-colors">
-                <ChevronDown className="w-3 h-3 text-gray-500" />
+                <ChevronDown className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-gray-500" />
               </div>
             </button>
 
@@ -138,63 +146,68 @@ const Sidebar = () => {
             </div>
           </div>
           
-          <div className="hidden lg:block">
-            <h2 className="font-bold text-lg text-gray-800">{authUser.fullName || authUser.name}</h2>
-            <p className="text-sm text-gray-500">
+          {/* User Info - Show on all screen sizes but adjust layout */}
+          <div className="min-w-0 flex-1">
+            <h2 className="font-bold text-base lg:text-lg text-gray-800 truncate">
+              {authUser.fullName || authUser.name}
+            </h2>
+            <p className="text-xs lg:text-sm text-gray-500">
               <span className="text-green-500 font-medium">{onlineUsers.length - 1} online</span> • {users.length} total
             </p>
           </div>
         </div>
 
-        <div className="hidden lg:block space-y-4">
+        {/* Search and Filter Section */}
+        <div className="space-y-3 lg:space-y-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-12 py-3 text-sm bg-white/70 border border-gray-200/50 rounded-xl 
+              className="w-full pl-10 lg:pl-12 pr-10 lg:pr-12 py-2.5 lg:py-3 text-sm bg-white/70 border border-gray-200/50 rounded-xl 
                          focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-300 
                          transition-all duration-200 backdrop-blur-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 lg:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center justify-between bg-white/50 rounded-xl p-3 border border-gray-200/50">
-            <label className="flex items-center gap-3 cursor-pointer">
+          <div className="flex items-center justify-between bg-white/50 rounded-xl p-2.5 lg:p-3 border border-gray-200/50">
+            <label className="flex items-center gap-2 lg:gap-3 cursor-pointer min-w-0 flex-1">
               <input
                 type="checkbox"
                 checked={showOnlineOnly}
                 onChange={(e) => setShowOnlineOnly(e.target.checked)}
-                className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2 flex-shrink-0"
               />
-              <span className="text-sm text-gray-700 font-medium">Show online only</span>
+              <span className="text-xs lg:text-sm text-gray-700 font-medium truncate">Show online only</span>
             </label>
-            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full font-medium">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 lg:px-3 py-1 rounded-full font-medium flex-shrink-0 ml-2">
               {filteredUsers.length}
             </span>
           </div>
         </div>
       </div>
 
+      {/* Contacts List */}
       <div className="flex-1 overflow-y-auto">
         {filteredUsers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-            <Users className="w-10 h-10 mb-3 opacity-50" />
-            <p className="text-sm text-center px-4 font-medium">
+          <div className="flex flex-col items-center justify-center h-40 text-gray-400 px-4">
+            <Users className="w-8 lg:w-10 h-8 lg:h-10 mb-3 opacity-50" />
+            <p className="text-sm text-center font-medium">
               {searchQuery ? "No contacts found" : showOnlineOnly ? "No online users" : "No contacts"}
             </p>
           </div>
         ) : (
-          <div className="p-3">
+          <div className="p-2 lg:p-3">
             {filteredUsers.map((user) => {
               const isSelected = selectedUser?._id === user._id;
               const isOnline = onlineUsers.includes(user._id);
@@ -203,13 +216,13 @@ const Sidebar = () => {
                 <button
                   key={user._id}
                   onClick={() => setSelectedUser(user)}
-                  className={`w-full p-4 flex items-center gap-4 rounded-2xl transition-all duration-200
+                  className={`w-full p-3 lg:p-4 flex items-center gap-3 lg:gap-4 rounded-2xl transition-all duration-200
                     hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 active:scale-[0.98] group mb-2
                     ${isSelected ? "bg-gradient-to-r from-purple-100 to-blue-100 shadow-lg ring-2 ring-purple-200/50" : "hover:shadow-md"}
                   `}
                 >
-                  <div className="relative flex-shrink-0 mx-auto lg:mx-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white shadow-lg group-hover:ring-purple-200 transition-all">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full overflow-hidden ring-2 ring-white shadow-lg group-hover:ring-purple-200 transition-all">
                       <img
                         src={user.profilePic || "/avatar.png"}
                         alt={user.fullName || "User"}
@@ -220,18 +233,19 @@ const Sidebar = () => {
                       />
                     </div>
                     
-                    <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white transition-colors shadow-sm ${
+                    <div className={`absolute bottom-0 right-0 w-3 h-3 lg:w-4 lg:h-4 rounded-full border-2 border-white transition-colors shadow-sm ${
                       isOnline ? 'bg-green-500' : 'bg-gray-300'
                     }`}></div>
                   </div>
 
-                  <div className="hidden lg:block flex-1 min-w-0 text-left">
-                    <div className={`font-semibold truncate transition-colors ${
+                  {/* User Info - Always show but adjust text size */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className={`font-semibold truncate transition-colors text-sm lg:text-base ${
                       isSelected ? 'text-purple-700' : 'text-gray-800'
                     }`}>
                       {user.fullName || "Unknown User"}
                     </div>
-                    <div className={`text-sm transition-colors ${
+                    <div className={`text-xs lg:text-sm transition-colors ${
                       isOnline 
                         ? 'text-green-600 font-medium' 
                         : 'text-gray-500'

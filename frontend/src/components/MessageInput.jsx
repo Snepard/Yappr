@@ -68,33 +68,33 @@ const MessageInput = () => {
   };
 
   return (
-    <div className="p-6 bg-white/80 backdrop-blur-xl border-t border-gray-200/50">
+    <div className="p-4 sm:p-6 bg-white/80 backdrop-blur-xl border-t border-gray-200/50">
       {imagePreview && (
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <div className="inline-block relative">
             <img
               src={imagePreview}
               alt="Preview"
-              className="w-24 h-24 object-cover rounded-2xl border-2 border-gray-200 shadow-lg"
+              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-2xl border-2 border-gray-200 shadow-lg"
             />
             <button
               onClick={removeImage}
-              className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white
+              className="absolute -top-2 -right-2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-red-500 text-white
                          hover:bg-red-600 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
               type="button"
               title="Remove image"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="flex items-end gap-4">
+      <form onSubmit={handleSendMessage} className="flex items-end gap-3 sm:gap-4">
         <div className="flex-1 relative">
           <textarea
-            className="w-full resize-none min-h-[3rem] max-h-32 
-                       py-4 pl-5 pr-14 text-sm leading-relaxed placeholder:text-gray-400
+            className="w-full resize-none min-h-[2.5rem] sm:min-h-[3rem] max-h-32 
+                       py-3 sm:py-4 pl-4 sm:pl-5 pr-12 sm:pr-14 text-sm leading-relaxed placeholder:text-gray-400
                        bg-gray-50 rounded-2xl border border-gray-200
                        focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300
                        transition-all duration-200 overflow-hidden"
@@ -105,14 +105,14 @@ const MessageInput = () => {
             rows="1"
             style={{
               height: 'auto',
-              minHeight: '3rem',
+              minHeight: window.innerWidth >= 640 ? '3rem' : '2.5rem',
               lineHeight: '1.5'
             }}
           />
           
           <button
             type="button"
-            className={`absolute right-4 bottom-4 p-2 rounded-xl transition-all duration-200 hover:scale-110
+            className={`absolute right-3 sm:right-4 bottom-3 sm:bottom-4 p-1.5 sm:p-2 rounded-xl transition-all duration-200 hover:scale-110
                        ${imagePreview 
                          ? "text-blue-500 hover:bg-blue-50" 
                          : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
@@ -120,7 +120,7 @@ const MessageInput = () => {
             onClick={() => fileInputRef.current?.click()}
             title="Attach image"
           >
-            <Image className="w-5 h-5" />
+            <Image className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
@@ -135,7 +135,7 @@ const MessageInput = () => {
         <button
           type="submit"
           disabled={!text.trim() && !imagePreview}
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200 
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-200 
                      shadow-lg hover:shadow-xl flex-shrink-0 ${
             (!text.trim() && !imagePreview)
               ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
@@ -143,7 +143,7 @@ const MessageInput = () => {
           }`}
           title="Send message"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </form>
     </div>
