@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/YapprIcon.png" alt="Yappr Logo" width="200"/>
+  <img src="frontend/public/YapprIcon.png" alt="Yappr Logo" width="120"/>
 
   <h1 align="center">Yappr</h1>
 
@@ -9,10 +9,18 @@
   </p>
 
   <p align="center">
-    <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white"/>
-    <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white"/>
-    <img alt="Socket.io" src="https://img.shields.io/badge/Socket.io-Real--Time-010101?logo=socketdotio&logoColor=white"/>
-    <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white"/>
+    <a href="https://reactjs.org/">
+      <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white"/>
+    </a>
+    <a href="https://nodejs.org/">
+      <img alt="Node.js" src="https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white"/>
+    </a>
+    <a href="https://socket.io/">
+      <img alt="Socket.io" src="https://img.shields.io/badge/Socket.io-Real--Time-010101?logo=socketdotio&logoColor=white"/>
+    </a>
+    <a href="https://www.mongodb.com/">
+      <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb&logoColor=white"/>
+    </a>
     <img alt="JWT" src="https://img.shields.io/badge/Auth-JWT-orange"/>
   </p>
 </div>
@@ -37,71 +45,52 @@ This project showcases **real-time systems**, **socket-based communication**, an
 ## ✨ Key Features
 
 ### 🔐 Authentication & Security
-- User signup & login
-- Password hashing
-- JWT-based authentication
-- Protected routes
+- **Secure Signup & Login:** Protected via JWT (JSON Web Tokens).
+- **Password Protection:** Passwords are hashed using bcrypt before storage.
+- **Route Guards:** Prevents unauthorized access to private chats.
 
 ### ⚡ Real-Time Messaging
-- Instant message delivery using **Socket.io**
-- Typing indicators (if implemented)
-- Live user presence updates
+- **Instant Delivery:** Powered by **Socket.io** for low-latency communication.
+- **Online Status:** See who is currently active in real-time.
+- **Live Updates:** Messages appear instantly without refreshing.
 
-### 💾 Persistent Chat History
-- Messages stored in **MongoDB**
-- Chats remain available after refresh or relogin
+### 💾 Persistent Data
+- **Chat History:** All conversations are stored in **MongoDB**.
+- **Session Restoration:** Chats remain available even after you close the browser.
 
-### 👤 User Management
-- Search users
-- Start private conversations
-- View online/offline status
-
-### 🎨 Modern UI
-- Responsive design
-- Clean chat layout
-- Smooth transitions for better UX
+### 👤 User Experience
+- **User Search:** Find and start conversations with other users.
+- **Responsive Design:** Fully optimized for desktop and mobile devices.
+- **Clean UI:** Built with **Tailwind CSS** for a modern look and feel.
 
 ---
 
 ## 🧩 Tech Stack
 
 ### **Frontend (Client)**
-- ⚛️ React (Vite)
-- 🎨 CSS / Tailwind (if used)
-- 🌐 Axios for API communication
-- 🔄 Context API for state management
+- **Framework:** React (Vite)
+- **Styling:** Tailwind CSS + DaisyUI
+- **State Management:** Zustand
+- **API Client:** Axios
+- **Icons:** React Icons
 
 ### **Backend (Server)**
-- 🟢 Node.js + Express
-- 🗃️ MongoDB + Mongoose
-- 🔐 JWT Authentication
-- 🔑 bcrypt for password hashing
-- 🔌 Socket.io for real-time communication
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Database:** MongoDB + Mongoose
+- **Real-Time Engine:** Socket.io
+- **Auth:** JWT + bcryptjs
 
 ---
 
-## 🔄 How Yappr Works (Flow)
+## 🔄 System Architecture
 
-1. **User Registers / Logs In**
-   - Credentials verified
-   - JWT issued and stored securely
-
-2. **Socket Connection Established**
-   - User joins socket room
-   - Online status broadcasted
-
-3. **Start Chat**
-   - User selects another user
-   - Private chat room created
-
-4. **Send Message**
-   - Message emitted via Socket.io
-   - Stored in MongoDB
-   - Delivered instantly to recipient
-
-5. **Receive Message**
-   - UI updates in real-time
-   - Message persists in chat history
+1. **Authentication:** User logs in → Server verifies credentials → Issues HTTP-only Cookie/JWT.
+2. **Connection:** Client establishes a bidirectional WebSocket connection via Socket.io.
+3. **Messaging:**
+   - **Sender:** Emits `sendMessage` event.
+   - **Server:** Saves message to MongoDB and broadcasts to the specific `receiverId`.
+   - **Receiver:** Listens for `newMessage` event and updates UI instantly.
 
 ---
 
@@ -110,55 +99,66 @@ This project showcases **real-time systems**, **socket-based communication**, an
 ```bash
 Yappr/
 │
-├── frontend/                 # React client
+├── frontend/                 # React client (Vite)
 │   ├── src/
-│   └── public/
+│   │   ├── components/       # Reusable UI components
+│   │   ├── pages/            # Login, Signup, Home pages
+│   │   ├── store/            # Zustand state stores
+│   │   └── context/          # Socket context
+│   └── public/               # Static assets
 │
 ├── backend/                  # Node.js + Express server
-│   ├── routes/
-│   ├── controllers/
-│   ├── models/
-│   └── socket/
+│   ├── controllers/          # Route logic
+│   ├── middleware/           # ProtectRoute middleware
+│   ├── models/               # Mongoose schemas (User, Message)
+│   ├── routes/               # API endpoints
+│   ├── socket/               # Socket.io logic
+│   └── server.js             # Entry point
 │
 └── README.md
 ```
 ---
 
 ## 🚀 Running Locally
+Follow these steps to set up Yappr on your machine.     
 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/Snepard/Yappr.git
+git clone [https://github.com/Snepard/Yappr.git](https://github.com/Snepard/Yappr.git)
 cd Yappr
 ```
 
 2️⃣ Backend Setup
+Navigate to the backend folder and install dependencies:
 ```bash
 cd backend
 npm install
+```
+Create a .env file in the backend folder:
+```bash
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_key
+NODE_ENV=development
+```
+Start the server:
+```bash
 npm run dev
 ```
-
-Create a .env file:
-```bash
-MONGO_URI=your_mongodb_url
-JWT_SECRET=your_secret_key
-```
-
 3️⃣ Frontend Setup
+Open a new terminal, navigate to the frontend folder, and install dependencies:
 ```bash
-cd frontend
+cd ../frontend
 npm install
+```
+
+Start the client:
+```bash
 npm run dev
+Visit http://localhost:5173 (or the port shown in your terminal) to view the app.
 ```
 ---
 ## 🧠 Author’s Note
-Yappr was built to deeply understand:
- - Real-time systems
- - WebSocket communication
- - Scalable backend architecture
- - Clean UI/UX for chat-based apps
- - It’s a solid foundation that can be extended with group chats, media sharing, read receipts, and notifications.
-
+Yappr was built to explore the intricacies of WebSocket communication and scalable backend architecture. It serves as a solid foundation that can be easily extended with features like group chats, file sharing, and read receipts.
 ---
 ## 🧾 License
 This project is licensed under the MIT License.
