@@ -20,6 +20,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.3",
+    "nodemailer": "^8.0.4",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

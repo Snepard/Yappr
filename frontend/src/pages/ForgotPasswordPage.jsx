@@ -1,37 +1,26 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
 
-const SigninPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState('');
   const [focused, setFocused] = useState('');
-  const { login, isLoggingIn } = useAuthStore();
+  
+  const { forgotPassword, isSendingReset } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEmail(e.target.value);
   };
 
   const validateForm = () => {
-    if (!formData.email.trim()) {
+    if (!email.trim()) {
       alert("Email is required!");
       return false;
     }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!/\S+@\S+\.\S+/.test(email)) {
       alert("Invalid email format");
-      return false;
-    }
-    if (!formData.password) {
-      alert("Password is required");
       return false;
     }
     return true;
@@ -40,22 +29,8 @@ const SigninPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const isValid = validateForm();
-    if(isValid) {login(formData)};
+    if(isValid) { forgotPassword(email) };
   };
-
-  const handleFocus = (fieldName) => {
-    setFocused(fieldName);
-  };
-
-  const handleBlur = () => {
-    setFocused('');
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -69,11 +44,8 @@ const SigninPage = () => {
           playsInline
         >
           <source src="\authBG.mp4" type="video/mp4" />
-          {/* Fallback gradient for browsers that don't support video */}
           <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         </video>
-        
-        {/* Dark overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
@@ -86,12 +58,12 @@ const SigninPage = () => {
             <div className="text-center mb-10">
               <div className="mb-4">
                 <h1 className="text-4xl font-bold text-white mb-3 tracking-wide">
-                  WELCOME BACK
+                  RECOVERY
                 </h1>
                 <div className="w-32 h-1 bg-gradient-to-r from-slate-400 to-slate-600 mx-auto rounded-full" />
               </div>
               <p className="text-blue-100 text-xl font-light tracking-wide">
-                Jump back to your convos!!
+                Get back to yappin'
               </p>
             </div>
 
@@ -105,10 +77,10 @@ const SigninPage = () => {
                 <input
                   type="email"
                   name="email"
-                  value={formData.email}
+                  value={email}
                   onChange={handleInputChange}
-                  onFocus={() => handleFocus('email')}
-                  onBlur={handleBlur}
+                  onFocus={() => setFocused('email')}
+                  onBlur={() => setFocused('')}
                   className="w-full px-6 py-4 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
                   placeholder="john@example.com"
                 />
@@ -117,74 +89,29 @@ const SigninPage = () => {
                 )}
               </div>
 
-              {/* Password */}
-              <div className="relative">
-                <label className="flex items-center text-white text-sm font-semibold mb-3 tracking-wide">
-                  <Lock className="mr-2 text-blue-400" size={16} />
-                  PASSWORD
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    onFocus={() => handleFocus('password')}
-                    onBlur={handleBlur}
-                    className="w-full px-6 py-4 pr-14 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors duration-300 focus:outline-none focus:text-blue-400 cursor-pointer"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
-                  </button>
-                </div>
-                {focused === 'password' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-purple-400/10 pointer-events-none" />
-                )}
-              </div>
-
-              {/* Forgot Password */}
-              <div className="text-right">
-                <button 
-                  type="button"
-                  onClick={() => navigate('/forgot-password')}
-                  className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors duration-300 hover:underline decoration-2 underline-offset-4 cursor-pointer">
-                  Forgot Password?
-                </button>
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"
                 onClick={handleSubmit}
                 className="w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 text-white font-bold text-lg rounded-xl shadow-2xl hover:from-slate-600 hover:to-slate-800 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-slate-400/50 active:scale-95 relative overflow-hidden group cursor-pointer"
-                disabled={isLoggingIn}
+                disabled={isSendingReset}
               > 
-                {isLoggingIn ? (
-                  <span className="relative z-10 tracking-wide">Signing In...</span>
+                {isSendingReset ? (
+                  <span className="relative z-10 tracking-wide">Sending...</span>
                 ) : (
-                  <span className="relative z-10 tracking-wide">START YAPPIN'</span>
+                  <span className="relative z-10 tracking-wide">SEND RESET LINK</span>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-500 to-slate-700 opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
                 <div className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
               </button>
             </div>
 
-            {/* Sign Up Option */}
             <div className="mt-8 text-center">
               <p className="text-white/80 text-lg">
-                New to yappr?{' '}
+                Remember your password?{' '}
                 <button className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300 hover:underline decoration-2 underline-offset-4 cursor-pointer"
-                  onClick={() => {navigate('/signup')}}>
-                  Create Account
+                  onClick={() => navigate('/login')}>
+                  Sign In
                 </button>
               </p>
             </div>
@@ -195,4 +122,4 @@ const SigninPage = () => {
   );
 };
 
-export default SigninPage;
+export default ForgotPasswordPage;

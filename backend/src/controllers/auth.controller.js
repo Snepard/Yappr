@@ -2,6 +2,8 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js"
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 export const signup = async (req,res) => {
     const {fullName,email,password} = req.body;
@@ -112,3 +114,95 @@ export const checkAuth = (req,res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
+
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "There is no user with that email address." });
+        }
+
+        const resetToken = crypto.randomBytes(20).toString("hex");
+
+        user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+        user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+        await user.save({ validateBeforeSave: false });
+
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+        const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+        console.log("Password Reset URL:", resetUrl);
+
+        try {
+            if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+                const transporter = nodemailer.createTransport({
+                    service: "Gmail",
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS,
+                    },
+                });
+
+                await transporter.sendMail({
+                    from: process.env.EMAIL_USER,
+                    to: user.email,
+                    subject: "Yappr Password Reset Token",
+                    text: message,
+                });
+            } else {
+                console.log("Email credentials not found in env. Email not sent, but reset token generated.");
+            }
+
+            res.status(200).json({ message: "Reset link sent! Please check your email or console." });
+        } catch (error) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+
+            await user.save({ validateBeforeSave: false });
+
+            console.log("Error sending email: ", error.message);
+            return res.status(500).json({ message: "Email could not be sent" });
+        }
+    } catch (error) {
+        console.log("Error in forgotPassword controller", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const resetPasswordToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
+
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() },
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
+        }
+
+        const { password } = req.body;
+        
+        if (!password || password.length < 6) {
+             return res.status(400).json({ message: "Password must be at least 6 characters" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        res.status(200).json({ message: "Password reset successful" });
+    } catch (error) {
+        console.log("Error in resetPassword controller", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
