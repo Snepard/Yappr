@@ -173,7 +173,9 @@ export const forgotPassword = async (req, res) => {
         </div>
         `;
 
-        console.log("Password Reset URL:", resetUrl);
+        if (process.env.NODE_ENV === "development") {
+            console.log("Password Reset URL:", resetUrl);
+        }
 
         try {
             if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
