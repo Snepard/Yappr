@@ -13,6 +13,8 @@ export const useAuthStore = create((set, get) => ({
     onlineUsers: [],
     socket: null,
     isCheckingAuth: true,
+    isSendingReset: false,
+    isResettingPassword: false,
     
     checkAuth: async() => {
         try {
@@ -77,6 +79,32 @@ export const useAuthStore = create((set, get) => ({
             toast.error(error.response.data.message);
         } finally {
             set({ isUpdatingProfile: false });
+        }
+    },
+
+    forgotPassword: async (email) => {
+        set({ isSendingReset: true });
+        try {
+            const res = await axiosInstance.post("/auth/forgot-password", { email });
+            toast.success(res.data.message || "Reset link sent!");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Something went wrong.");
+        } finally {
+            set({ isSendingReset: false });
+        }
+    },
+
+    resetPassword: async (token, password) => {
+        set({ isResettingPassword: true });
+        try {
+            const res = await axiosInstance.put(`/auth/reset-password/${token}`, { password });
+            toast.success(res.data.message || "Password reset successfully!");
+            return true;
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Something went wrong.");
+            return false;
+        } finally {
+            set({ isResettingPassword: false });
         }
     },
 

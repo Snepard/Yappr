@@ -7,6 +7,8 @@ import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from './store/useAuthStore';
@@ -34,6 +36,8 @@ const App = () => {
           <Route path='/' element={<PageWrapper> {authUser ? <HomePage/> : <Navigate to="/login"/>} </PageWrapper>} />
           <Route path='/signup' element={<PageWrapper> {!authUser ? <SignUpPage/> : <Navigate to="/"/>} </PageWrapper>} />
           <Route path='/login' element={<PageWrapper> {!authUser ? <LoginPage/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/forgot-password' element={<PageWrapper> {!authUser ? <ForgotPasswordPage/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/reset-password/:token' element={<PageWrapper> {!authUser ? <ResetPasswordPage/> : <Navigate to="/"/>} </PageWrapper>} />
           <Route path='/profile' element={<PageWrapper> {authUser ? <ProfilePage/> : <Navigate to="/login"/>} </PageWrapper>} />
         </Routes>
       </AnimatePresence>
