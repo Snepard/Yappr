@@ -135,6 +135,44 @@ export const forgotPassword = async (req, res) => {
         const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
+        const emailTemplate = `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0f172a; padding: 40px; border-radius: 16px; color: #ffffff; border: 1px solid #1e293b;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #ffffff; margin: 0; font-size: 32px; letter-spacing: 4px; font-weight: 800;">YAPPR</h1>
+                <div style="height: 3px; background: linear-gradient(to right, #475569, #94a3b8, #475569); width: 80px; margin: 15px auto; border-radius: 2px;"></div>
+            </div>
+            
+            <p style="font-size: 18px; font-weight: 300; line-height: 1.6; color: #f1f5f9; margin-bottom: 24px;">
+                Hello there,
+            </p>
+            <p style="font-size: 16px; line-height: 1.6; color: #cbd5e1; margin-bottom: 36px;">
+                We received a request to reset the password for your Yappr account. No problem! Click the button below to set up a new password. If you didn't request this, you can safely ignore this email.
+            </p>
+            
+            <div style="text-align: center; margin-bottom: 40px;">
+                <a href="${resetUrl}" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 12px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);">
+                    RESET PASSWORD
+                </a>
+            </div>
+            
+            <div style="border-top: 1px solid #334155; padding-top: 24px;">
+                <p style="font-size: 14px; line-height: 1.6; color: #94a3b8; margin: 0;">
+                    Having trouble clicking the button? Copy and paste this link into your browser:
+                </p>
+                <p style="font-size: 14px; line-height: 1.6; margin-top: 8px;">
+                    <a href="${resetUrl}" style="color: #60a5fa; word-break: break-all;">${resetUrl}</a>
+                </p>
+            </div>
+            
+            <div style="margin-top: 40px; text-align: center;">
+                <p style="font-size: 13px; color: #64748b;">
+                    Thanks for yappin' with us!<br>
+                    &copy; ${new Date().getFullYear()} Yappr
+                </p>
+            </div>
+        </div>
+        `;
+
         console.log("Password Reset URL:", resetUrl);
 
         try {
@@ -148,10 +186,11 @@ export const forgotPassword = async (req, res) => {
                 });
 
                 await transporter.sendMail({
-                    from: process.env.EMAIL_USER,
+                    from: `"Yappr Team" <${process.env.EMAIL_USER}>`,
                     to: user.email,
-                    subject: "Yappr Password Reset Token",
+                    subject: "Reset your Yappr Password",
                     text: message,
+                    html: emailTemplate,
                 });
             } else {
                 console.log("Email credentials not found in env. Email not sent, but reset token generated.");
