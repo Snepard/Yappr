@@ -35,26 +35,39 @@ export const useChatStore = create((set, get) => ({
   },
   
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
+    const { selectedUser, messages, users } = get();
     try {
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-      set({ messages: [...messages, res.data] });
+      set({
+        messages: [...messages, res.data],
+        users: users.map((u) =>
+          u._id === selectedUser._id ? { ...u, lastMessageTime: res.data.createdAt } : u
+        ),
+      });
     } catch (error) {
       toast.error(error.response.data.message);
     }
   },
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if(!selectedUser) return;
-    
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
     socket.on("newMessage", (newMessage) => {
-      if(newMessage.senderId !== selectedUser._id) return;
+      const { selectedUser, users, messages } = get();
+
+      // Update lastMessageTime for the sender user
       set({
-        messages: [...get().messages, newMessage],
+        users: users.map((u) =>
+          u._id === newMessage.senderId ? { ...u, lastMessageTime: newMessage.createdAt } : u
+        ),
       });
+
+      if (selectedUser && newMessage.senderId === selectedUser._id) {
+        set({
+          messages: [...messages, newMessage],
+        });
+      }
     });
   },
 

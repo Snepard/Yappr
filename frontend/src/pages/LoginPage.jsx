@@ -100,17 +100,17 @@ const SigninPage = () => {
               <div className="relative">
                 <label className="flex items-center text-white text-sm font-semibold mb-3 tracking-wide">
                   <Mail className="mr-2 text-blue-400" size={16} />
-                  EMAIL ADDRESS
+                  EMAIL OR USERNAME
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   onFocus={() => handleFocus('email')}
                   onBlur={handleBlur}
                   className="w-full px-6 py-4 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                  placeholder="john@example.com"
+                  placeholder="john@example.com or johndoe"
                 />
                 {focused === 'email' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, AtSign } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -8,6 +8,7 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
+    username: '',
     email: '',
     password: ''
   });
@@ -26,6 +27,14 @@ const SignupPage = () => {
   const validateForm = () => {
     if (!formData.fullName.trim()) {
       alert("Full name is required!");
+      return false;
+    }
+    if (!formData.username.trim()) {
+      alert("Username is required!");
+      return false;
+    }
+    if (!/^[a-zA-Z0-9_.]+$/.test(formData.username.trim())) {
+      alert("Username can only contain letters, numbers, underscores, and dots");
       return false;
     }
     if (!formData.email.trim()) {
@@ -125,6 +134,27 @@ const SignupPage = () => {
                   placeholder="John Doe"
                 />
                 {focused === 'fullName' && (
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />
+                )}
+              </div>
+
+              {/* Username */}
+              <div className="relative">
+                <label className="flex items-center text-white text-sm font-semibold mb-3 tracking-wide">
+                  <AtSign className="mr-2 text-blue-400" size={16} />
+                  USERNAME
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  onFocus={() => handleFocus('username')}
+                  onBlur={handleBlur}
+                  className="w-full px-6 py-4 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
+                  placeholder="johndoe"
+                />
+                {focused === 'username' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />
                 )}
               </div>

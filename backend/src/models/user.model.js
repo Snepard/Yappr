@@ -20,6 +20,19 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        username: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+        },
+        friends: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         resetPasswordToken: String,
         resetPasswordExpire: Date,
     },

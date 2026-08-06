@@ -113,10 +113,10 @@ const ChatContainer = () => {
                       </div>
                     )}
                     
-                    <div className={`relative px-3 sm:px-4 py-2 sm:py-3 rounded-2xl backdrop-blur-md border shadow-lg transform transition-all duration-200 hover:scale-[1.02] min-w-0 max-w-full ${
+                    <div className={`relative px-3 sm:px-4 py-2 sm:py-3 rounded-2xl border shadow-sm min-w-0 max-w-full ${
                       isOwnMessage 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-blue-400/30 rounded-br-md shadow-blue-200/50' 
-                        : 'bg-white/80 text-gray-800 border-gray-200/50 rounded-bl-md shadow-gray-200/50'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border-blue-400/30 rounded-br-md shadow-blue-200/30' 
+                        : 'bg-white text-gray-800 border-gray-200/80 rounded-bl-md shadow-gray-100'
                     }`}>
                       {message.image && (
                         <img
