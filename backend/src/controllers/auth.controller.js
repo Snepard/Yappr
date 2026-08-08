@@ -264,3 +264,25 @@ export const resetPassword = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const updatePublicKey = async (req, res) => {
+  try {
+    const { publicKey } = req.body;
+    const userId = req.user._id;
+
+    if (!publicKey) {
+      return res.status(400).json({ message: "Public key is required" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { publicKey },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error in updatePublicKey controller:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

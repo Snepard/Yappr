@@ -1,4 +1,4 @@
-import { X, ArrowLeft } from "lucide-react";
+import { X, ArrowLeft, Lock } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
@@ -9,6 +9,7 @@ const ChatHeader = () => {
   if (!selectedUser) return null;
 
   const isOnline = onlineUsers.includes(selectedUser._id);
+  const isE2EE = Boolean(selectedUser.publicKey);
 
   const handleBackToContacts = () => {
     setSelectedUser(null);
@@ -50,13 +51,20 @@ const ChatHeader = () => {
             <h3 className="font-semibold text-base sm:text-lg text-gray-800 truncate">
               {selectedUser.fullName}
             </h3>
-            <p className={`text-xs sm:text-sm transition-colors ${
-              isOnline 
-                ? 'text-green-600 font-medium' 
-                : 'text-gray-500'
-            }`}>
-              {isOnline ? "Online" : "Offline"}
-            </p>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <span className={`transition-colors ${
+                isOnline 
+                  ? 'text-green-600 font-medium' 
+                  : 'text-gray-500'
+              }`}>
+                {isOnline ? "Online" : "Offline"}
+              </span>
+              {isE2EE && (
+                <span className="text-[11px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border border-purple-100">
+                  <Lock className="w-3 h-3" /> E2EE
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

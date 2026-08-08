@@ -85,7 +85,7 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text, image, iv, isEncrypted } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
@@ -101,6 +101,8 @@ export const sendMessage = async (req, res) => {
       receiverId,
       text,
       image: imageUrl,
+      iv: iv || "",
+      isEncrypted: typeof isEncrypted === "boolean" ? isEncrypted : false,
     });
 
     await newMessage.save();

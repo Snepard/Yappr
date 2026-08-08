@@ -2,6 +2,12 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import {
+  generateECDHKeyPair,
+  exportKeyToJWK,
+  storePrivateKeyLocally,
+  getPrivateKeyLocally,
+} from "../lib/crypto";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001": "/";
 
@@ -16,11 +22,31 @@ export const useAuthStore = create((set, get) => ({
     isSendingReset: false,
     isResettingPassword: false,
     
+    initializeE2EEKeys: async (user) => {
+        if (!user || !user._id) return;
+        try {
+            const localPrivateKeyJwk = await getPrivateKeyLocally(user._id);
+            if (!localPrivateKeyJwk || !user.publicKey) {
+                // Generate new keypair for user
+                const keyPair = await generateECDHKeyPair();
+                const privateJwk = await exportKeyToJWK(keyPair.privateKey);
+                const publicJwk = await exportKeyToJWK(keyPair.publicKey);
+
+                await storePrivateKeyLocally(user._id, privateJwk);
+                const res = await axiosInstance.put("/auth/public-key", { publicKey: publicJwk });
+                set({ authUser: res.data });
+            }
+        } catch (err) {
+            console.error("Failed to initialize E2EE keys:", err);
+        }
+    },
+
     checkAuth: async() => {
         try {
             const res = await axiosInstance.get("/auth/check");
             set({authUser:res.data});
             get().connectSocket();
+            get().initializeE2EEKeys(res.data);
         } catch (error) {
             console.log("Error in checkAuth: ", error);
             set({authUser:null});
@@ -36,6 +62,7 @@ export const useAuthStore = create((set, get) => ({
             set({ authUser: res.data });
             toast.success("Account created successfully!!");
             get().connectSocket();
+            get().initializeE2EEKeys(res.data);
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
@@ -50,6 +77,7 @@ export const useAuthStore = create((set, get) => ({
             set({ authUser: res.data });
             toast.success("Logged in successfully");
             get().connectSocket();
+            get().initializeE2EEKeys(res.data);
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
