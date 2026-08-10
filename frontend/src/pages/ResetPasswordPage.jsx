@@ -109,7 +109,7 @@ const ResetPasswordPage = () => {
                   </button>
                 </div>
                 {focused === 'password' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-purple-400/10 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-cyan-400/10 pointer-events-none" />
                 )}
               </div>
 

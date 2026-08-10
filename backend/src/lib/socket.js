@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 import jwt from "jsonwebtoken";
-import cookie from "cookie";
+import { parseCookie } from "cookie";
 
 const app = express();
 const server = http.createServer(app);
@@ -30,7 +30,7 @@ io.use((socket, next) => {
             return next(new Error("Authentication error: No cookies found"));
         }
 
-        const parsedCookies = cookie.parse(rawCookies);
+        const parsedCookies = parseCookie(rawCookies);
         const token = parsedCookies.jwt;
 
         if (!token) {

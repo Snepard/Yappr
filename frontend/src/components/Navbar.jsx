@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { UserPlus } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import InviteModal from "./InviteModal";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   return (
     <>
-      <nav className="top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-indigo-500/30 shadow-2xl">
+      <nav className="top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-xl border-b border-blue-500/30 shadow-2xl">
         {/* Animated shimmer effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent animate-pulse opacity-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent animate-pulse opacity-50"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -19,7 +22,7 @@ const Navbar = () => {
               className="flex items-center space-x-3 cursor-pointer group"
             >
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-black to-purple-500 rounded-full flex items-center justify-center text-white text-lg shadow-lg shadow-indigo-500/40 group-hover:shadow-indigo-500/60 transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-900 to-blue-600 rounded-full flex items-center justify-center text-white text-lg shadow-lg shadow-blue-500/40 group-hover:shadow-blue-500/60 transition-all duration-300 group-hover:scale-105 overflow-hidden">
                   {/* Replace this with your logo image */}
                   <img
                     src="/YapprIcon.png"
@@ -27,13 +30,13 @@ const Navbar = () => {
                     className="w-8 h-8 object-contain"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-full animate-ping opacity-20"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-sky-400 to-blue-600 rounded-full animate-ping opacity-20"></div>
               </div>
               <div className="hidden sm:block">
-                <h2 className="text-xl font-bold text-white bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text">
+                <h2 className="text-xl font-bold text-white bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text">
                   YAPPR
                 </h2>
-                <span className="text-xs text-indigo-300/80 font-light">
+                <span className="text-xs text-sky-300/80 font-light">
                   Connect Beyond
                 </span>
               </div>
@@ -42,13 +45,22 @@ const Navbar = () => {
             {authUser ? (
             /* Navigation Links & Logout */
             <div className="flex items-center space-x-8">
-              <div className="hidden md:flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-4">
+                <button
+                  onClick={() => setIsInviteOpen(true)}
+                  className="relative text-white/80 hover:text-white font-medium py-2 px-4 rounded-full transition-all duration-300 hover:bg-blue-500/20 hover:-translate-y-0.5 group cursor-pointer flex items-center gap-1.5"
+                >
+                  <UserPlus className="w-4 h-4 text-cyan-400" />
+                  <span className="relative z-10">Invite</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
+                </button>
+
                 <Link
                   to={"/profile"}
-                  className="relative text-white/80 hover:text-white font-medium py-2 px-4 rounded-full transition-all duration-300 hover:bg-indigo-500/20 hover:-translate-y-0.5 group"
+                  className="relative text-white/80 hover:text-white font-medium py-2 px-4 rounded-full transition-all duration-300 hover:bg-blue-500/20 hover:-translate-y-0.5 group"
                 >
                   <span className="relative z-10">Profile</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></div>
                 </Link>
               </div>
 
@@ -108,6 +120,7 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+      <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </>
   );
 };

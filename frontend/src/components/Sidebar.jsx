@@ -17,7 +17,9 @@ import {
   Check,
   Clock,
   Sparkles,
+  Share2,
 } from "lucide-react";
+import InviteModal from "./InviteModal";
 
 const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
@@ -43,6 +45,7 @@ const Sidebar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -127,13 +130,13 @@ const Sidebar = () => {
     `}
     >
       {/* Header & User Profile */}
-      <div className="border-b border-gray-200/50 p-4 lg:p-5 bg-gradient-to-r from-purple-50/50 to-blue-50/50">
+      <div className="border-b border-gray-200/50 p-4 lg:p-5 bg-gradient-to-r from-blue-50/60 to-sky-50/60">
         <div className="flex items-center gap-3 mb-4 lg:mb-5">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              className="p-1 bg-gradient-to-br from-purple-100 to-blue-100 rounded-3xl shadow-sm h-12 w-12 lg:h-13 lg:w-13 
-                         hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20
+              className="p-1 bg-gradient-to-br from-blue-100 to-sky-100 rounded-3xl shadow-sm h-12 w-12 lg:h-13 lg:w-13 
+                         hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20
                          relative group cursor-pointer flex-shrink-0"
             >
               <img
@@ -141,7 +144,7 @@ const Sidebar = () => {
                 alt="Profile"
                 className="w-full h-full object-cover rounded-3xl"
               />
-              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm group-hover:bg-purple-50 transition-colors">
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm group-hover:bg-blue-50 transition-colors">
                 <ChevronDown className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-gray-500" />
               </div>
             </button>
@@ -161,11 +164,23 @@ const Sidebar = () => {
                   to="/profile"
                   onClick={() => setShowProfileDropdown(false)}
                   className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r 
-                             hover:from-purple-50 hover:to-blue-50 transition-all duration-200 cursor-pointer"
+                             hover:from-blue-50 hover:to-sky-50 transition-all duration-200 cursor-pointer"
                 >
-                  <User className="w-4 h-4 text-purple-500" />
+                  <User className="w-4 h-4 text-blue-500" />
                   <span className="font-medium">View Profile</span>
                 </Link>
+
+                <button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    setIsInviteModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r 
+                             hover:from-blue-50 hover:to-sky-50 transition-all duration-200 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 text-cyan-600" />
+                  <span className="font-medium">Invite Friends</span>
+                </button>
 
                 <button
                   onClick={handleLogout}
@@ -183,7 +198,7 @@ const Sidebar = () => {
             <h2 className="font-bold text-base lg:text-lg text-gray-800 truncate">
               {authUser.fullName || authUser.name}
             </h2>
-            <p className="text-xs text-purple-600 font-semibold truncate">
+            <p className="text-xs text-blue-600 font-semibold truncate">
               @{authUser.username || authUser.email?.split("@")[0]}
             </p>
           </div>
@@ -195,7 +210,7 @@ const Sidebar = () => {
             onClick={() => setActiveTab("chats")}
             className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
               activeTab === "chats"
-                ? "bg-white text-purple-700 shadow-sm"
+                ? "bg-white text-blue-700 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -207,7 +222,7 @@ const Sidebar = () => {
             onClick={() => setActiveTab("find")}
             className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
               activeTab === "find"
-                ? "bg-white text-purple-700 shadow-sm"
+                ? "bg-white text-blue-700 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -219,7 +234,7 @@ const Sidebar = () => {
             onClick={() => setActiveTab("requests")}
             className={`flex-1 py-2 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 relative transition-all ${
               activeTab === "requests"
-                ? "bg-white text-purple-700 shadow-sm"
+                ? "bg-white text-blue-700 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -247,7 +262,7 @@ const Sidebar = () => {
                   placeholder="Search friends..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                  className="w-full pl-9 pr-8 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 {searchQuery && (
                   <button
@@ -265,7 +280,7 @@ const Sidebar = () => {
                     type="checkbox"
                     checked={showOnlineOnly}
                     onChange={(e) => setShowOnlineOnly(e.target.checked)}
-                    className="w-3 h-3 text-purple-600 rounded focus:ring-purple-500"
+                    className="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
                   />
                   <span className="text-xs text-gray-600 font-medium">Online only</span>
                 </label>
@@ -278,7 +293,7 @@ const Sidebar = () => {
             <div className="flex-1 p-2">
               {filteredUsers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-48 text-gray-400 px-4 text-center">
-                  <Users className="w-9 h-9 mb-2 opacity-40 text-purple-500" />
+                  <Users className="w-9 h-9 mb-2 opacity-40 text-blue-500" />
                   <p className="text-sm font-semibold text-gray-700 mb-1">
                     {searchQuery ? "No friends found" : "No friends yet"}
                   </p>
@@ -290,7 +305,7 @@ const Sidebar = () => {
                   {!searchQuery && (
                     <button
                       onClick={() => setActiveTab("find")}
-                      className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-semibold rounded-lg shadow-sm hover:opacity-90"
+                      className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white text-xs font-semibold rounded-lg shadow-sm hover:opacity-90"
                     >
                       Find Friends
                     </button>
@@ -307,7 +322,7 @@ const Sidebar = () => {
                       onClick={() => setSelectedUser(user)}
                       className={`w-full p-3 flex items-center gap-3 rounded-2xl transition-all duration-200 mb-2.5 ${
                         isSelected
-                          ? "bg-gradient-to-r from-purple-100 to-blue-100 shadow-md ring-2 ring-purple-200/50"
+                          ? "bg-gradient-to-r from-blue-100 to-sky-100 shadow-md ring-2 ring-blue-200/50"
                           : "hover:bg-gray-50"
                       }`}
                     >
@@ -333,7 +348,7 @@ const Sidebar = () => {
                         <div className="font-semibold text-sm text-gray-800 truncate">
                           {user.fullName}
                         </div>
-                        <div className="text-xs text-purple-600 font-medium truncate">
+                        <div className="text-xs text-blue-600 font-medium truncate">
                           @{user.username || user.email?.split("@")[0]}
                         </div>
                       </div>
@@ -349,13 +364,13 @@ const Sidebar = () => {
         {activeTab === "find" && (
           <div className="p-3">
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-400" />
               <input
                 type="text"
                 placeholder="Search @username or name..."
                 value={friendSearchQuery}
                 onChange={(e) => setFriendSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2.5 text-xs bg-purple-50/50 border border-purple-200/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                className="w-full pl-9 pr-8 py-2.5 text-xs bg-blue-50/50 border border-blue-200/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               {friendSearchQuery && (
                 <button
@@ -379,7 +394,7 @@ const Sidebar = () => {
                   </div>
                 ) : searchResults.length === 0 ? (
                   <div className="text-center py-8 px-4 text-gray-400">
-                    <UserPlus className="w-8 h-8 mx-auto mb-2 opacity-40 text-purple-500" />
+                    <UserPlus className="w-8 h-8 mx-auto mb-2 opacity-40 text-blue-500" />
                     <p className="text-xs font-medium">No users found for "{friendSearchQuery}"</p>
                   </div>
                 ) : (
@@ -400,7 +415,7 @@ const Sidebar = () => {
                           />
                           <div className="min-w-0">
                             <p className="font-semibold text-xs text-gray-800 truncate">{user.fullName}</p>
-                            <p className="text-[11px] text-purple-600 truncate">@{user.username}</p>
+                            <p className="text-[11px] text-blue-600 truncate">@{user.username}</p>
                           </div>
                         </div>
 
@@ -426,7 +441,7 @@ const Sidebar = () => {
                           {user.relationshipStatus === "none" && (
                             <button
                               onClick={() => sendFriendRequest(user._id)}
-                              className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
                             >
                               + Add
                             </button>
@@ -440,9 +455,23 @@ const Sidebar = () => {
             ) : (
               /* RECOMMENDATIONS / FRIENDS OF FRIENDS MODE */
               <div>
+                {/* Invite Friends Banner */}
+                <div className="mb-4 p-3 bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 rounded-2xl text-white shadow-sm flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-xs">Invite your friends</p>
+                    <p className="text-[10px] text-blue-100">Share link to chat together</p>
+                  </div>
+                  <button
+                    onClick={() => setIsInviteModalOpen(true)}
+                    className="px-3 py-1.5 bg-white text-blue-600 font-bold text-xs rounded-xl shadow-xs hover:bg-blue-50 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5" /> Invite
+                  </button>
+                </div>
+
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                     <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                       Friends of Friends
                     </h3>
@@ -455,8 +484,8 @@ const Sidebar = () => {
                     Finding suggestions...
                   </div>
                 ) : recommendedUsers.length === 0 ? (
-                  <div className="text-center py-8 px-4 text-gray-400 bg-purple-50/30 rounded-2xl border border-purple-100/50">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-purple-500" />
+                  <div className="text-center py-8 px-4 text-gray-400 bg-blue-50/30 rounded-2xl border border-blue-100/50">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-blue-500" />
                     <p className="text-xs font-semibold text-gray-700 mb-1">No suggestions available</p>
                     <p className="text-[11px] text-gray-500">
                       Add more friends or type a handle in the search bar above!
@@ -467,23 +496,23 @@ const Sidebar = () => {
                     {recommendedUsers.map((user) => (
                       <div
                         key={user._id}
-                        className="p-3 bg-white border border-purple-100/80 rounded-2xl shadow-sm flex items-center justify-between gap-3 hover:shadow-md transition-shadow"
+                        className="p-3 bg-white border border-blue-100/80 rounded-2xl shadow-sm flex items-center justify-between gap-3 hover:shadow-md transition-shadow"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <img
                             src={user.profilePic || "/avatar.png"}
                             alt={user.fullName}
-                            className="w-10 h-10 rounded-full object-cover ring-2 ring-purple-100 border border-white"
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-100 border border-white"
                             onError={(e) => {
                               e.target.src = "/avatar.png";
                             }}
                           />
                           <div className="min-w-0">
                             <p className="font-semibold text-xs text-gray-800 truncate">{user.fullName}</p>
-                            <p className="text-[11px] text-purple-600 font-medium truncate">
+                            <p className="text-[11px] text-blue-600 font-medium truncate">
                               @{user.username}
                             </p>
-                            <p className="text-[10px] text-purple-500 font-semibold mt-0.5 flex items-center gap-1">
+                            <p className="text-[10px] text-blue-500 font-semibold mt-0.5 flex items-center gap-1">
                               <span>🤝</span> {user.mutualFriendsCount} mutual friend
                               {user.mutualFriendsCount > 1 ? "s" : ""}
                             </p>
@@ -506,7 +535,7 @@ const Sidebar = () => {
                           {user.relationshipStatus === "none" && (
                             <button
                               onClick={() => sendFriendRequest(user._id)}
-                              className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+                              className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
                             >
                               + Add
                             </button>
@@ -530,7 +559,7 @@ const Sidebar = () => {
               </div>
             ) : pendingRequests.length === 0 ? (
               <div className="text-center py-10 text-gray-400">
-                <UserCheck className="w-8 h-8 mx-auto mb-2 opacity-40 text-purple-500" />
+                <UserCheck className="w-8 h-8 mx-auto mb-2 opacity-40 text-blue-500" />
                 <p className="text-xs font-medium">No pending friend requests</p>
               </div>
             ) : (
@@ -553,7 +582,7 @@ const Sidebar = () => {
                         <p className="font-semibold text-xs text-gray-800 truncate">
                           {req.sender.fullName}
                         </p>
-                        <p className="text-[11px] text-purple-600 truncate">
+                        <p className="text-[11px] text-blue-600 truncate">
                           @{req.sender.username}
                         </p>
                       </div>
@@ -562,7 +591,7 @@ const Sidebar = () => {
                     <div className="flex gap-2 mt-1">
                       <button
                         onClick={() => acceptFriendRequest(req._id)}
-                        className="flex-1 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm"
+                        className="flex-1 py-1.5 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white text-xs font-semibold rounded-lg shadow-sm"
                       >
                         Accept
                       </button>
@@ -580,6 +609,7 @@ const Sidebar = () => {
           </div>
         )}
       </div>
+      <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
     </aside>
   );
 };

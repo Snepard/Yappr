@@ -139,7 +139,7 @@ const MessageInput = () => {
                      shadow-lg hover:shadow-xl flex-shrink-0 ${
             (!text.trim() && !imagePreview)
               ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
-              : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-110 hover:from-blue-600 hover:to-purple-700"
+              : "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:scale-110 hover:from-blue-700 hover:to-cyan-700"
           }`}
           title="Send message"
         >

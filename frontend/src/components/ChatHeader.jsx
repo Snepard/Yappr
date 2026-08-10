@@ -60,7 +60,7 @@ const ChatHeader = () => {
                 {isOnline ? "Online" : "Offline"}
               </span>
               {isE2EE && (
-                <span className="text-[11px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border border-purple-100">
+                <span className="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border border-blue-100">
                   <Lock className="w-3 h-3" /> E2EE
                 </span>
               )}

@@ -134,7 +134,7 @@ const SignupPage = () => {
                   placeholder="John Doe"
                 />
                 {focused === 'fullName' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
                 )}
               </div>
 
@@ -155,7 +155,7 @@ const SignupPage = () => {
                   placeholder="johndoe"
                 />
                 {focused === 'username' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
                 )}
               </div>
 
@@ -176,7 +176,7 @@ const SignupPage = () => {
                   placeholder="john@example.com"
                 />
                 {focused === 'email' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-purple-400/5 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
                 )}
               </div>
 
@@ -210,7 +210,7 @@ const SignupPage = () => {
                   </button>
                 </div>
                 {focused === 'password' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-purple-400/10 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-cyan-400/10 pointer-events-none" />
                 )}
               </div>
 
