@@ -164,28 +164,27 @@ const ProfilePage = () => {
       {/* Dark Overlay for Better Contrast */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-blue-900/30 to-black/70 z-10"></div>
 
-      {/* Back to Home Button */}
-      <div className="absolute top-6 left-6 z-30">
-        <Link 
-          to="/"
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800/60 to-blue-800/60 backdrop-blur-lg rounded-full border border-blue-400/30 text-blue-200 hover:text-white hover:from-slate-700/70 hover:to-blue-700/70 transition-all duration-300 shadow-lg hover:shadow-blue-500/20 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
-          <Home className="w-4 h-4" />
-          <span className="text-sm font-medium">Back to Home</span>
-        </Link>
-      </div>
-
       {/* Main Content */}
-      <main className="relative z-20 flex justify-center items-center min-h-screen p-4 sm:p-6 lg:p-8">
-        <div className="bg-gradient-to-br from-slate-800/50 via-slate-900/60 to-blue-900/40 backdrop-blur-xl rounded-3xl p-6 sm:p-8 w-full max-w-4xl lg:max-w-5xl border border-blue-400/30 shadow-2xl shadow-blue-500/10">
+      <main className="relative z-20 flex justify-center items-center min-h-screen p-4 sm:p-6 lg:p-8 pt-16 sm:pt-6">
+        <div className="bg-gradient-to-br from-slate-800/50 via-slate-900/60 to-blue-900/40 backdrop-blur-xl rounded-3xl p-5 sm:p-8 w-full max-w-4xl lg:max-w-5xl border border-blue-400/30 shadow-2xl shadow-blue-500/10">
           
-          {/* Profile Header */}
-          <div className="text-center mb-6 lg:mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-1.5 bg-gradient-to-r from-cyan-300 via-blue-300 to-sky-300 bg-clip-text text-transparent drop-shadow-lg">
-              Profile Settings
-            </h2>
-            <p className="text-blue-200 text-xs sm:text-sm font-medium">Manage your personal details and security settings</p>
+          {/* Profile Header Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 lg:mb-8 border-b border-blue-400/20 pb-4">
+            <Link 
+              to="/"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800/80 to-blue-800/80 backdrop-blur-lg rounded-full border border-blue-400/30 text-blue-200 hover:text-white hover:from-slate-700/80 hover:to-blue-700/80 transition-all duration-300 shadow-md group self-start sm:self-center"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
+              <Home className="w-4 h-4" />
+              <span className="text-xs sm:text-sm font-medium">Back to Home</span>
+            </Link>
+
+            <div className="text-center sm:text-right w-full sm:w-auto">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-cyan-300 via-blue-300 to-sky-300 bg-clip-text text-transparent drop-shadow-lg">
+                Profile Settings
+              </h2>
+              <p className="text-blue-200 text-xs sm:text-sm font-medium">Manage your personal details and security settings</p>
+            </div>
           </div>
 
           {/* 2-Column Landscape Layout */}
