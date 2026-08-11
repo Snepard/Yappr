@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 const SigninPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -13,6 +14,15 @@ const SigninPage = () => {
   
   const [focused, setFocused] = useState('');
   const { login, isLoggingIn } = useAuthStore();
+
+  useEffect(() => {
+    const isRemembered = localStorage.getItem('rememberMe') === 'true';
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (isRemembered && savedEmail) {
+      setRememberMe(true);
+      setFormData(prev => ({ ...prev, email: savedEmail }));
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +51,16 @@ const SigninPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const isValid = validateForm();
-    if(isValid) {login(formData)};
+    if (isValid) {
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('rememberedEmail', formData.email);
+      } else {
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('rememberedEmail');
+      }
+      login(formData);
+    }
   };
 
   const handleFocus = (fieldName) => {
@@ -152,8 +171,28 @@ const SigninPage = () => {
                 )}
               </div>
 
-              {/* Forgot Password */}
-              <div className="text-right">
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between pt-1">
+                <label className="flex items-center space-x-2.5 text-white/90 text-sm font-semibold cursor-pointer select-none group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-5 h-5 bg-black/30 border-2 border-white/30 rounded-md peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all duration-200 flex items-center justify-center group-hover:border-white/50">
+                      {rememberMe && (
+                        <svg className="w-3.5 h-3.5 text-white stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-white/80 group-hover:text-white transition-colors duration-200">
+                    Remember me
+                  </span>
+                </label>
                 <button 
                   type="button"
                   onClick={() => navigate('/forgot-password')}
