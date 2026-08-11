@@ -123,6 +123,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     acceptFriendRequest,
     declineFriendRequest,
     subscribeToFriendEvents,
+    unsubscribeFromFriendEvents,
   } = useFriendStore();
 
   const [activeTab, setActiveTab] = useState("chats"); // "chats" | "find" | "requests"
@@ -141,7 +142,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     getFriendRequests();
     getRecommendedFriends();
     subscribeToFriendEvents();
-  }, [getUsers, getFriendRequests, getRecommendedFriends, subscribeToFriendEvents]);
+    return () => unsubscribeFromFriendEvents();
+  }, [getUsers, getFriendRequests, getRecommendedFriends, subscribeToFriendEvents, unsubscribeFromFriendEvents]);
 
   // Fetch recommendations whenever switching to Find tab
   useEffect(() => {

@@ -19,3 +19,19 @@ input[type="reset"],
 input[type="button"] {
   cursor: pointer !important;
 }
+
+.gradient-bg-fixed {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.4), transparent 60%),
+              radial-gradient(circle at 80% 30%, rgba(29, 78, 216, 0.45), transparent 60%),
+              radial-gradient(circle at 50% 80%, rgba(56, 189, 248, 0.3), transparent 50%),
+              linear-gradient(135deg, #e0f2fe, #f0f9ff, #dbeafe);
+  z-index: -1;
+  transform: translateZ(0);
+}
+

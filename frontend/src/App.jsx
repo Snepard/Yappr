@@ -10,30 +10,34 @@ import ProfilePage from "./pages/ProfilePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from "react-hot-toast";
 import PageWrapper from './components/PageWrapper';
 import DeleteMessageAnimation from './components/DeleteMessageAnimation';
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const authUser = useAuthStore((state) => state.authUser);
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth);
+  const location = useLocation();
 
   useEffect(() => {
-    checkAuth()
+    checkAuth();
   }, [checkAuth]);
 
-  if(isCheckingAuth && !authUser)
+  if (isCheckingAuth && !authUser) {
     return (
-    <div className="flex items-center justify-center h-screen">
-      <span className="loading loading-dots loading-xl"></span>
-    </div>
+      <div className="flex items-center justify-center h-screen bg-slate-950">
+        <span className="loading loading-dots loading-xl text-sky-400"></span>
+      </div>
     );
+  }
 
   return (
     <div> 
       <AnimatePresence mode="wait">
-        <Routes>
+        <Routes location={location} key={location.pathname}>
           <Route path='/' element={<PageWrapper> {authUser ? <HomePage/> : <Navigate to="/login"/>} </PageWrapper>} />
           <Route path='/signup' element={<PageWrapper> {!authUser ? <SignUpPage/> : <Navigate to="/"/>} </PageWrapper>} />
           <Route path='/login' element={<PageWrapper> {!authUser ? <LoginPage/> : <Navigate to="/"/>} </PageWrapper>} />
@@ -46,14 +50,16 @@ const App = () => {
       <Toaster 
         position="top-center"
         reverseOrder={false}
+        gutter={8}
+        containerStyle={{ top: 20 }}
         toastOptions={{
-          className: 'text-sm font-medium rounded-xl shadow-lg',
-          duration: 3500,
+          className: 'text-sm font-medium rounded-xl shadow-lg border border-slate-200/80 backdrop-blur-md',
+          duration: 3000,
         }}
       />
       <DeleteMessageAnimation />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

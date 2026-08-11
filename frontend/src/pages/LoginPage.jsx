@@ -78,15 +78,16 @@ const SigninPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden transform-gpu">
       {/* Video Background Container */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full transform-gpu">
         <video 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transform-gpu"
           autoPlay 
           loop 
           muted 
           playsInline
+          preload="auto"
         >
           <source src="\authBG.mp4" type="video/mp4" />
           {/* Fallback gradient for browsers that don't support video */}
@@ -94,7 +95,7 @@ const SigninPage = () => {
         </video>
         
         {/* Dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
       </div>
 
       {/* Main Content */}

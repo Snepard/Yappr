@@ -79,15 +79,14 @@ const ConfirmToastCard = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -30, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.94 }}
-      transition={{ type: "spring", stiffness: 420, damping: 26 }}
+      initial={{ opacity: 0, y: -25, scale: 0.94 }}
+      animate={t.visible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -20, scale: 0.94 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={`
         relative pointer-events-auto w-[92vw] sm:w-[420px] max-w-md
-        bg-white/45 backdrop-blur-2xl backdrop-saturate-200
+        bg-white/75 backdrop-blur-2xl backdrop-saturate-200
         border border-white/80 shadow-[inset_0_1px_2px_rgba(255,255,255,0.9),0_20px_50px_rgba(14,165,233,0.22)]
-        rounded-3xl p-5 text-slate-800 overflow-hidden z-[99999] ring-1 ring-sky-500/20
+        rounded-3xl p-5 text-slate-800 overflow-hidden z-[99999] ring-1 ring-sky-500/20 transform-gpu
       `}
     >
       {/* Gloss Reflection Shine Overlay */}

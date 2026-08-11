@@ -100,13 +100,21 @@ export const useFriendStore = create((set, get) => ({
     socket.off("friendRequestAccepted");
 
     socket.on("newFriendRequest", () => {
-      toast("You received a new friend request!", { icon: "👋" });
+      toast("You received a new friend request!", { id: "new-friend-request", icon: "👋" });
       get().getFriendRequests();
     });
 
     socket.on("friendRequestAccepted", ({ acceptedBy }) => {
-      toast.success(`${acceptedBy?.fullName || "User"} accepted your friend request!`);
+      toast.success(`${acceptedBy?.fullName || "User"} accepted your friend request!`, { id: `friend-accepted-${acceptedBy?._id || 'user'}` });
       useChatStore.getState().getUsers();
     });
+  },
+
+  unsubscribeFromFriendEvents: () => {
+    const socket = useAuthStore.getState().socket;
+    if (socket) {
+      socket.off("newFriendRequest");
+      socket.off("friendRequestAccepted");
+    }
   },
 }));

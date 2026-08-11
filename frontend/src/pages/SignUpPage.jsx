@@ -80,15 +80,16 @@ const SignupPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center transform-gpu">
       {/* Video Background Container */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full transform-gpu">
         <video 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transform-gpu"
           autoPlay 
           loop 
           muted 
           playsInline
+          preload="auto"
         >
           <source src="\authBG.mp4" type="video/mp4" />
           {/* Fallback gradient for browsers that don't support video */}
@@ -96,13 +97,13 @@ const SignupPage = () => {
         </video>
         
         {/* Dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-2xl px-4 py-4">
+      <div className="relative z-10 w-full max-w-2xl px-4 py-4 transform-gpu">
         {/* Form Container with Enhanced Blur for Dark Background */}
-        <div className="backdrop-blur-sm bg-gradient-to-br from-black/40 to-black/20 rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 transition-all duration-500">
+        <div className="backdrop-blur-sm bg-gradient-to-br from-black/40 to-black/20 rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 transition-all duration-500 transform-gpu">
           {/* Header inside container */}
           <div className="text-center mb-6">
             <div className="mb-2">
