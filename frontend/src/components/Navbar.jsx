@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useChatStore } from "../store/useChatStore";
 import InviteModal from "./InviteModal";
+import { confirmLogout } from "../lib/confirmToast";
 
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const setIsInviteOpen = useChatStore((state) => state.setIsInviteOpen);
 
   return (
     <>
@@ -66,7 +68,10 @@ const Navbar = () => {
 
               <button
                 className="relative group overflow-hidden bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white font-bold py-3 px-6 rounded-2xl transition-all duration-300 shadow-xl shadow-red-500/25 hover:shadow-red-500/40 hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-95 transform-gpu"
-                onClick={logout}
+                onClick={async () => {
+                  const confirmed = await confirmLogout();
+                  if (confirmed) logout();
+                }}
               >
                 {/* Animated background layers */}
                 <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>

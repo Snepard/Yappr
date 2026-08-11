@@ -22,6 +22,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import InviteModal from "./InviteModal";
+import { confirmLogout, confirmToast } from "../lib/confirmToast";
 
 const Tooltip = ({ children, label, position = "right" }) => {
   const [coords, setCoords] = useState(null);
@@ -106,7 +107,7 @@ const Tooltip = ({ children, label, position = "right" }) => {
 };
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
-  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
+  const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, setIsInviteOpen } = useChatStore();
   const { onlineUsers, authUser, logout } = useAuthStore();
   const {
     searchResults,
@@ -131,6 +132,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const fixedDropdownRef = useRef(null);
+  const collapsedAsideRef = useRef(null);
+  const avatarButtonRef = useRef(null);
 
   useEffect(() => {
     getUsers();
@@ -159,7 +163,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      const inTrigger = dropdownRef.current && dropdownRef.current.contains(event.target);
+      const inFixedPanel = fixedDropdownRef.current && fixedDropdownRef.current.contains(event.target);
+      if (!inTrigger && !inFixedPanel) {
         setShowProfileDropdown(false);
       }
     };
@@ -170,9 +176,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     };
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setShowProfileDropdown(false);
+  const handleLogout = async () => {
+    const confirmed = await confirmLogout();
+    if (confirmed) {
+      logout();
+      setShowProfileDropdown(false);
+    }
   };
 
   const filteredUsers = useMemo(() => {
@@ -210,7 +219,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     return (
       <>
         {/* Desktop Mini Sidebar Rail */}
-        <aside className="h-full hidden md:flex w-16 sm:w-20 transition-all duration-300 flex-col items-center py-4 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none">
+        <aside ref={collapsedAsideRef} className="h-full hidden md:flex w-16 sm:w-20 transition-all duration-300 flex-col items-center py-4 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none">
           {/* Top: App Round Logo */}
           <div className="flex flex-col items-center mb-5">
             <Tooltip label="Expand Sidebar" position="right">
@@ -227,6 +236,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           <div className="relative mb-5" ref={dropdownRef}>
             <Tooltip label={authUser?.fullName || "My Profile"} position="right">
               <button
+                ref={avatarButtonRef}
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 className="w-10 h-10 rounded-2xl overflow-hidden ring-2 ring-blue-400/40 shadow-sm hover:scale-105 transition-all relative block"
               >
@@ -240,7 +250,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
             {/* Mini Dropdown Menu */}
             {showProfileDropdown && (
-              <div className="absolute top-0 left-14 w-48 bg-white rounded-xl shadow-xl border border-sky-100 backdrop-blur-xl z-50 overflow-hidden py-1">
+              <div ref={fixedDropdownRef} className="fixed w-48 bg-white rounded-xl shadow-xl border border-sky-100 backdrop-blur-xl z-[9999] overflow-hidden py-1"
+                style={{
+                  top: avatarButtonRef.current ? avatarButtonRef.current.getBoundingClientRect().top : 0,
+                  left: collapsedAsideRef.current ? collapsedAsideRef.current.getBoundingClientRect().right + 8 : 0
+                }}
+              >
                 <div className="px-3 py-2 border-b border-gray-100">
                   <p className="text-xs font-bold text-gray-800 truncate">{authUser?.fullName}</p>
                   <p className="text-[10px] text-blue-600 font-semibold truncate">@{authUser?.username}</p>
@@ -258,9 +273,9 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 <button
                   onClick={() => {
                     setShowProfileDropdown(false);
-                    setIsInviteModalOpen(true);
+                    setIsInviteOpen(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-sky-50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-sky-50 transition-colors cursor-pointer"
                 >
                   <UserPlus className="w-4 h-4 text-cyan-600" />
                   <span>Invite Friends</span>
@@ -422,7 +437,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);
-                        setIsInviteModalOpen(true);
+                        setIsInviteOpen(true);
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-sky-50 transition-all cursor-pointer"
                     >
@@ -653,7 +668,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 <button
                   onClick={() => {
                     setShowProfileDropdown(false);
-                    setIsInviteModalOpen(true);
+                    setIsInviteOpen(true);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r 
                              hover:from-blue-50 hover:to-sky-50 transition-all duration-200 cursor-pointer"
@@ -942,7 +957,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                     <p className="text-[10px] text-blue-100">Share link to chat together</p>
                   </div>
                   <button
-                    onClick={() => setIsInviteModalOpen(true)}
+                    onClick={() => setIsInviteOpen(true)}
                     className="px-3 py-1.5 bg-white text-blue-600 font-bold text-xs rounded-xl shadow-xs hover:bg-blue-50 transition-all flex items-center gap-1 cursor-pointer"
                   >
                     <Share2 className="w-3.5 h-3.5" /> Invite
@@ -1076,8 +1091,19 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                         Accept
                       </button>
                       <button
-                        onClick={() => declineFriendRequest(req._id)}
-                        className="flex-1 py-1.5 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 text-xs font-semibold rounded-lg"
+                        onClick={async () => {
+                          const confirmed = await confirmToast({
+                            title: "Decline Friend Request?",
+                            message: `Are you sure you want to decline the request from ${req.sender?.fullName || "this user"}?`,
+                            confirmText: "Decline",
+                            cancelText: "Cancel",
+                            variant: "warning",
+                          });
+                          if (confirmed) {
+                            declineFriendRequest(req._id);
+                          }
+                        }}
+                        className="flex-1 py-1.5 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600 text-xs font-semibold rounded-lg transition-colors"
                       >
                         Decline
                       </button>

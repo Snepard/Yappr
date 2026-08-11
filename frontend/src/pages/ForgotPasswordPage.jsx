@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -16,11 +17,11 @@ const ForgotPasswordPage = () => {
 
   const validateForm = () => {
     if (!email.trim()) {
-      alert("Email is required!");
+      toast.error("Email is required!");
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      alert("Invalid email format");
+      toast.error("Invalid email format");
       return false;
     }
     return true;

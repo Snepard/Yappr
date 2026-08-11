@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 const ResetPasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,11 +19,11 @@ const ResetPasswordPage = () => {
 
   const validateForm = () => {
     if (!password) {
-      alert("Password is required");
+      toast.error("Password is required");
       return false;
     }
     if (password.length < 6) {
-      alert("Password must be at least 6 characters");
+      toast.error("Password must be at least 6 characters");
       return false;
     }
     return true;

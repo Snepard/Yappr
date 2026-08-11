@@ -133,7 +133,10 @@ export const deleteMessage = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to delete this message" });
     }
 
-    await Message.findByIdAndDelete(messageId);
+    message.isDeleted = true;
+    message.text = "This message was deleted";
+    message.image = "";
+    await message.save();
 
     const receiverSocketId = getReceiverSocketId(message.receiverId.toString());
     const senderSocketId = getReceiverSocketId(message.senderId.toString());
@@ -142,6 +145,8 @@ export const deleteMessage = async (req, res) => {
       messageId,
       senderId: message.senderId.toString(),
       receiverId: message.receiverId.toString(),
+      isDeleted: true,
+      text: "This message was deleted",
     };
 
     if (receiverSocketId) {
@@ -151,7 +156,7 @@ export const deleteMessage = async (req, res) => {
       io.to(senderSocketId).emit("messageDeleted", deletePayload);
     }
 
-    res.status(200).json({ message: "Message deleted successfully", messageId });
+    res.status(200).json({ message: "Message deleted successfully", messageId, message });
   } catch (error) {
     console.error("Error in deleteMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });

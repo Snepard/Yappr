@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Camera, ArrowLeft, Home, KeyRound, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Link } from "react-router-dom";
+import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile, changePassword, isChangingPassword } = useAuthStore();
@@ -24,15 +25,15 @@ const ProfilePage = () => {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (!passwords.currentPassword || !passwords.newPassword) {
-      alert("Please fill in both current and new password");
+      toast.error("Please fill in both current and new password");
       return;
     }
     if (passwords.newPassword.length < 6) {
-      alert("New password must be at least 6 characters long");
+      toast.error("New password must be at least 6 characters long");
       return;
     }
     if (passwords.newPassword !== passwords.confirmPassword) {
-      alert("New passwords do not match!");
+      toast.error("New passwords do not match!");
       return;
     }
 

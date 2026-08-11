@@ -14,6 +14,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from './store/useAuthStore';
 import { Toaster } from "react-hot-toast";
 import PageWrapper from './components/PageWrapper';
+import DeleteMessageAnimation from './components/DeleteMessageAnimation';
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -42,7 +43,15 @@ const App = () => {
         </Routes>
       </AnimatePresence>
 
-      <Toaster/>
+      <Toaster 
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          className: 'text-sm font-medium rounded-xl shadow-lg',
+          duration: 3500,
+        }}
+      />
+      <DeleteMessageAnimation />
     </div>
   )
 }

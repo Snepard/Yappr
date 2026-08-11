@@ -1,12 +1,17 @@
 import { useChatStore } from "../store/useChatStore";
-import { useEffect, useRef } from "react";
-import { Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Trash2, Ban, ChevronDown, Copy, Forward } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
+import ForwardModal from "./ForwardModal";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+import { confirmDelete } from "../lib/confirmToast";
+import { useDeleteAnimationStore } from "../store/useDeleteAnimationStore";
 
 const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   const {
@@ -19,21 +24,61 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
     deleteMessage,
   } = useChatStore();
   const { authUser } = useAuthStore();
+  const triggerDeleteAnimation = useDeleteAnimationStore((state) => state.triggerDeleteAnimation);
+  
   const messageEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
-  // Auto-scroll to bottom when messages change
+  const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
+  const [forwardModalMessage, setForwardModalMessage] = useState(null);
+  const touchTimerRef = useRef(null);
+
+  // Close dropdown menu on click outside
   useEffect(() => {
-    const scrollToBottom = () => {
-      messageEndRef.current?.scrollIntoView({ 
-        behavior: "smooth",
-        block: "end" 
-      });
+    const handleClickOutside = () => {
+      setActiveMenuMessageId(null);
     };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
-    // Small delay to ensure DOM is updated
-    const timeoutId = setTimeout(scrollToBottom, 100);
-    
-    return () => clearTimeout(timeoutId);
+  // Long press handler for mobile touch devices
+  const handleTouchStart = (msg) => {
+    if (msg.isDeleted) return;
+    touchTimerRef.current = setTimeout(() => {
+      if (navigator.vibrate) navigator.vibrate(35);
+      setActiveMenuMessageId(msg._id);
+    }, 450);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+  };
+
+  // Robust Auto-scroll to extreme bottom when messages update
+  const scrollToBottom = (behavior = "smooth") => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom("smooth");
+
+    // Multiple ticks to account for DOM rendering & image attachment loading
+    const timeoutId1 = setTimeout(() => scrollToBottom("smooth"), 60);
+    const timeoutId2 = setTimeout(() => scrollToBottom("auto"), 220);
+
+    return () => {
+      clearTimeout(timeoutId1);
+      clearTimeout(timeoutId2);
+    };
   }, [messages]);
 
   useEffect(() => {
@@ -67,7 +112,10 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
+      >
         {!messages || messages?.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-gray-600 h-full px-4 min-h-[300px]">
             <div className="text-center bg-white/70 backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-sm border border-sky-100 max-w-sm lg:max-w-md w-full">
@@ -122,37 +170,133 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
                     )}
                     
                     <div className="flex items-center gap-1.5 group/bubble relative">
-                      {isOwnMessage && (
-                        <button
-                          onClick={() => {
-                            if (window.confirm("Delete this message?")) {
-                              deleteMessage(message._id);
-                            }
-                          }}
-                          className="opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 flex-shrink-0"
-                          title="Delete message"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      <div className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl border shadow-xs min-w-0 max-w-full ${
-                        isOwnMessage 
-                          ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white border-blue-400/30 rounded-br-xs' 
-                          : 'bg-white text-gray-800 border-sky-100 rounded-bl-xs'
-                      }`}>
-                        {message.image && (
-                          <img
-                            src={message.image}
-                            alt="Attachment"
-                            className="max-w-[220px] sm:max-w-[280px] w-full rounded-xl mb-2 cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
-                            onClick={() => window.open(message.image, '_blank')}
-                          />
+                      <div
+                        onTouchStart={() => handleTouchStart(message)}
+                        onTouchEnd={handleTouchEnd}
+                        onTouchMove={handleTouchEnd}
+                        className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 ${!message.isDeleted ? 'pr-7 sm:pr-8' : ''} rounded-2xl border shadow-xs min-w-[120px] max-w-full group/msgbubble ${
+                          message.isDeleted
+                            ? 'bg-slate-100/90 text-slate-400 border-slate-200/70 font-medium select-none'
+                            : isOwnMessage 
+                            ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white border-blue-400/30 rounded-br-xs' 
+                            : 'bg-white text-gray-800 border-sky-100 rounded-bl-xs'
+                        }`}
+                      >
+                        {/* WhatsApp-style Chevron Arrow Dropdown Trigger */}
+                        {!message.isDeleted && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuMessageId((prev) => (prev === message._id ? null : message._id));
+                            }}
+                            className={`
+                              absolute top-1.5 right-1.5 p-0.5 rounded-full backdrop-blur-xs transition-all duration-200 z-20 cursor-pointer
+                              ${
+                                isOwnMessage
+                                  ? 'text-white/80 hover:text-white hover:bg-white/20'
+                                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                              }
+                              ${
+                                activeMenuMessageId === message._id
+                                  ? 'opacity-100 bg-white/20'
+                                  : 'opacity-0 group-hover/msgbubble:opacity-100'
+                              }
+                            `}
+                            title="Message options"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                          </button>
                         )}
-                        {message.text && (
-                          <p className="text-xs sm:text-sm leading-relaxed break-words whitespace-pre-wrap overflow-wrap-anywhere">
-                            {message.text}
-                          </p>
+
+                        {/* WhatsApp Options Context Dropdown Menu (Appears UPWARDS) */}
+                        <AnimatePresence>
+                          {activeMenuMessageId === message._id && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.92, y: 8 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`
+                                absolute z-50 bottom-full mb-2 ${isOwnMessage ? 'right-0' : 'left-0'}
+                                w-44 bg-white/95 backdrop-blur-xl border border-sky-100/90
+                                shadow-2xl shadow-sky-500/15 rounded-2xl p-1.5 text-slate-800 ring-1 ring-sky-500/10
+                              `}
+                            >
+                              {/* Copy Option */}
+                              {message.text && (
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(message.text);
+                                    toast.success("Message copied to clipboard!");
+                                    setActiveMenuMessageId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-sky-50/80 rounded-xl transition-colors cursor-pointer"
+                                >
+                                  <Copy className="w-3.5 h-3.5 text-blue-500" />
+                                  <span>Copy Text</span>
+                                </button>
+                              )}
+
+                              {/* Forward Option */}
+                              <button
+                                onClick={() => {
+                                  setForwardModalMessage(message);
+                                  setActiveMenuMessageId(null);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-sky-50/80 rounded-xl transition-colors cursor-pointer"
+                              >
+                                <Forward className="w-3.5 h-3.5 text-sky-500" />
+                                <span>Forward</span>
+                              </button>
+
+                              {/* Delete Option (Own Messages Only) */}
+                              {isOwnMessage && (
+                                <button
+                                  onClick={async () => {
+                                    setActiveMenuMessageId(null);
+                                    const confirmed = await confirmDelete({
+                                      title: "Delete Message?",
+                                      message: "Are you sure you want to delete this message? This action cannot be undone.",
+                                      confirmText: "Delete",
+                                      cancelText: "Cancel",
+                                    });
+                                    if (confirmed) {
+                                      await triggerDeleteAnimation(message.text || "Attachment");
+                                      deleteMessage(message._id);
+                                    }
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50/80 rounded-xl transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-2"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                                  <span>Delete Message</span>
+                                </button>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {message.isDeleted ? (
+                          <div className="flex items-center gap-1.5 italic text-slate-400 font-medium">
+                            <Ban className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="text-xs sm:text-sm">This message was deleted</span>
+                          </div>
+                        ) : (
+                          <>
+                            {message.image && (
+                              <img
+                                src={message.image}
+                                alt="Attachment"
+                                className="max-w-[220px] sm:max-w-[280px] w-full rounded-xl mb-2 cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
+                                onClick={() => window.open(message.image, '_blank')}
+                              />
+                            )}
+                            {message.text && (
+                              <p className="text-xs sm:text-sm leading-relaxed break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                                {message.text}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -167,6 +311,13 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
       </div>
 
       <MessageInput />
+
+      {/* Forward Modal */}
+      <ForwardModal
+        isOpen={!!forwardModalMessage}
+        onClose={() => setForwardModalMessage(null)}
+        messageToForward={forwardModalMessage}
+      />
     </div>
   );
 };

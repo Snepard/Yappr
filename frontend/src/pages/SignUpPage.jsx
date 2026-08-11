@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Lock, AtSign } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 const SignupPage = () => {
   
@@ -26,31 +27,31 @@ const SignupPage = () => {
 
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      alert("Full name is required!");
+      toast.error("Full name is required!");
       return false;
     }
     if (!formData.username.trim()) {
-      alert("Username is required!");
+      toast.error("Username is required!");
       return false;
     }
     if (!/^[a-zA-Z0-9_.]+$/.test(formData.username.trim())) {
-      alert("Username can only contain letters, numbers, underscores, and dots");
+      toast.error("Username can only contain letters, numbers, underscores, and dots");
       return false;
     }
     if (!formData.email.trim()) {
-      alert("Email is required!");
+      toast.error("Email is required!");
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      alert("Invalid email format");
+      toast.error("Invalid email format");
       return false;
     }
     if (!formData.password) {
-      alert("Password is required");
+      toast.error("Password is required");
       return false;
     }
     if (formData.password.length < 6) {
-      alert("Password must be at least 6 characters");
+      toast.error("Password must be at least 6 characters");
       return false;
     }
     return true;

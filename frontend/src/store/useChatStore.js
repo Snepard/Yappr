@@ -45,8 +45,15 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   selectedUser: null,
+  isInviteOpen: false,
   isUsersLoading: false,
   isMessagesLoading: false,
+
+  setIsInviteOpen: (isOpen) =>
+    set((state) => ({
+      isInviteOpen: isOpen,
+      selectedUser: isOpen ? null : state.selectedUser,
+    })),
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -126,13 +133,47 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  forwardMessage: async (targetUserId, messageData) => {
+    const { users, selectedUser, messages } = get();
+    try {
+      const targetUser = users.find((u) => u._id === targetUserId);
+      let payload = { text: messageData.text || "", image: messageData.image || "" };
+
+      if (targetUser?.publicKey && payload.text) {
+        const sharedKey = await getSharedKeyForUser(targetUser);
+        if (sharedKey) {
+          const { ciphertextBase64, ivBase64 } = await encryptText(payload.text, sharedKey);
+          payload.text = ciphertextBase64;
+          payload.iv = ivBase64;
+          payload.isEncrypted = true;
+        }
+      }
+
+      const res = await axiosInstance.post(`/messages/send/${targetUserId}`, payload);
+
+      if (selectedUser && selectedUser._id === targetUserId) {
+        set({
+          messages: [...messages, { ...res.data, text: messageData.text }],
+        });
+      }
+      toast.success(`Message forwarded to ${targetUser?.fullName || "user"}!`);
+      return true;
+    } catch (error) {
+      toast.error("Failed to forward message");
+      return false;
+    }
+  },
+
   deleteMessage: async (messageId) => {
     try {
       await axiosInstance.delete(`/messages/${messageId}`);
       set((state) => ({
-        messages: state.messages.filter((msg) => msg._id !== messageId),
+        messages: state.messages.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, isDeleted: true, text: "This message was deleted", image: "" }
+            : msg
+        ),
       }));
-      toast.success("Message deleted");
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to delete message");
     }
@@ -174,7 +215,11 @@ export const useChatStore = create((set, get) => ({
 
     socket.on("messageDeleted", ({ messageId }) => {
       set((state) => ({
-        messages: state.messages.filter((msg) => msg._id !== messageId),
+        messages: state.messages.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, isDeleted: true, text: "This message was deleted", image: "" }
+            : msg
+        ),
       }));
     });
   },
@@ -187,6 +232,6 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+  setSelectedUser: (selectedUser) => set({ selectedUser, isInviteOpen: false }),
 }));
 
