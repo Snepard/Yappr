@@ -7,10 +7,10 @@ import { useChatStore } from "./useChatStore";
 export const useGroupStore = create((set, get) => ({
   groups: [],
   selectedGroup: null,
+  groupMessages: [],
   isGroupsLoading: false,
   isGroupDetailsLoading: false,
-  isCreateModalOpen: false,
-  isInfoModalOpen: false,
+  isGroupMessagesLoading: false,
   isGroupInfoOpen: false,
   isCreatingGroup: false,
   activeTimeout: { isTimedOut: false, until: null },
@@ -23,19 +23,16 @@ export const useGroupStore = create((set, get) => ({
     set({
       isCreatingGroup: isCreating,
       isGroupInfoOpen: false,
-      isInfoModalOpen: false,
       selectedGroup: isCreating ? null : get().selectedGroup,
     });
   },
-  setIsCreateModalOpen: (isOpen) => set({ isCreateModalOpen: isOpen }),
-  setIsInfoModalOpen: (isOpen) => set({ isInfoModalOpen: isOpen, isGroupInfoOpen: isOpen }),
   setIsGroupInfoOpen: (isOpen) => {
     if (isOpen) {
       useChatStore.getState().setSelectedUser(null);
       useChatStore.getState().setIsInviteOpen(false);
       set({ isCreatingGroup: false });
     }
-    set({ isInfoModalOpen: isOpen, isGroupInfoOpen: isOpen });
+    set({ isGroupInfoOpen: isOpen });
   },
 
   getGroups: async () => {
@@ -206,14 +203,40 @@ export const useGroupStore = create((set, get) => ({
     }
   },
 
+  getGroupMessages: async (groupId) => {
+    if (!groupId) return;
+    set({ isGroupMessagesLoading: true });
+    try {
+      const res = await axiosInstance.get(`/messages/group/${groupId}`);
+      set({ groupMessages: res.data });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load group messages");
+    } finally {
+      set({ isGroupMessagesLoading: false });
+    }
+  },
+
+  sendGroupMessage: async (groupId, messageData) => {
+    try {
+      const res = await axiosInstance.post(`/messages/send/group/${groupId}`, messageData);
+      set((state) => ({
+        groupMessages: [...state.groupMessages, res.data],
+      }));
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send group message");
+      throw error;
+    }
+  },
+
   leaveGroup: async (groupId) => {
     try {
       await axiosInstance.post(`/groups/${groupId}/leave`);
       set((state) => ({
         groups: state.groups.filter((g) => g._id !== groupId),
         selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
-        isInfoModalOpen: false,
         isGroupInfoOpen: false,
+        groupMessages: state.selectedGroup?._id === groupId ? [] : state.groupMessages,
       }));
       toast.success("Left group successfully");
     } catch (error) {
@@ -234,13 +257,14 @@ export const useGroupStore = create((set, get) => ({
       useChatStore.getState().setIsInviteOpen(false);
     }
 
-    set({ selectedGroup: group, isCreatingGroup: false, isGroupInfoOpen: false, isInfoModalOpen: false });
+    set({ selectedGroup: group, isCreatingGroup: false, isGroupInfoOpen: false, groupMessages: [] });
 
     if (group) {
       if (socket) {
         socket.emit("joinGroupRoom", group._id);
       }
       get().getGroupDetails(group._id);
+      get().getGroupMessages(group._id);
     }
   },
 
@@ -252,6 +276,8 @@ export const useGroupStore = create((set, get) => ({
     socket.off("groupUpdated");
     socket.off("groupMemberTimeout");
     socket.off("groupMemberRemoved");
+    socket.off("newGroupMessage");
+    socket.off("messageDeleted");
 
     socket.on("groupCreated", (newGroup) => {
       if (!newGroup || !newGroup._id) return;
@@ -316,8 +342,33 @@ export const useGroupStore = create((set, get) => ({
         set((state) => ({
           groups: state.groups.filter((g) => g._id !== groupId),
           selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
+          groupMessages: state.selectedGroup?._id === groupId ? [] : state.groupMessages,
         }));
         toast("You were removed from the group", { icon: "ℹ️" });
+      }
+    });
+
+    socket.on("newGroupMessage", (msg) => {
+      const { selectedGroup } = get();
+      if (selectedGroup && msg.groupId?.toString() === selectedGroup._id.toString()) {
+        set((state) => {
+          // Avoid duplicate messages if already appended locally
+          if (state.groupMessages.some((m) => m._id === msg._id)) return state;
+          return { groupMessages: [...state.groupMessages, msg] };
+        });
+      }
+    });
+
+    socket.on("messageDeleted", ({ messageId, groupId }) => {
+      const { selectedGroup } = get();
+      if (selectedGroup && groupId?.toString() === selectedGroup._id.toString()) {
+        set((state) => ({
+          groupMessages: state.groupMessages.map((msg) =>
+            msg._id === messageId
+              ? { ...msg, isDeleted: true, text: "This message was deleted", image: "" }
+              : msg
+          ),
+        }));
       }
     });
   },
@@ -329,6 +380,8 @@ export const useGroupStore = create((set, get) => ({
       socket.off("groupUpdated");
       socket.off("groupMemberTimeout");
       socket.off("groupMemberRemoved");
+      socket.off("newGroupMessage");
+      socket.off("messageDeleted");
     }
   },
 }));

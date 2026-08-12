@@ -10,10 +10,10 @@ import GroupInfoPanel from "../components/GroupInfoPanel";
 
 const HomePage = () => {
   const { selectedUser, isInviteOpen } = useChatStore();
-  const { selectedGroup, isCreatingGroup, isGroupInfoOpen, isInfoModalOpen, setIsGroupInfoOpen } = useGroupStore();
+  const { selectedGroup, isCreatingGroup, isGroupInfoOpen, setIsGroupInfoOpen } = useGroupStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const showGroupInfo = Boolean((isGroupInfoOpen || isInfoModalOpen) && selectedGroup);
+  const showGroupInfo = Boolean(isGroupInfoOpen && selectedGroup);
   const hasActiveChat = Boolean(selectedUser || selectedGroup);
   const isRightWindowActive = Boolean(hasActiveChat || isInviteOpen || isCreatingGroup || showGroupInfo);
 

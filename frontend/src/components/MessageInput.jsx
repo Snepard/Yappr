@@ -12,7 +12,7 @@ const MessageInput = () => {
   const fileInputRef = useRef(null);
   
   const { sendMessage } = useChatStore();
-  const { selectedGroup, activeTimeout } = useGroupStore();
+  const { selectedGroup, activeTimeout, sendGroupMessage } = useGroupStore();
 
   const isTimedOut = Boolean(selectedGroup && activeTimeout?.isTimedOut);
 
@@ -53,8 +53,8 @@ const MessageInput = () => {
 
     try {
       if (selectedGroup) {
-        // Send Group Message
-        await axiosInstance.post(`/messages/send/group/${selectedGroup._id}`, {
+        // Send Group Message via store action
+        await sendGroupMessage(selectedGroup._id, {
           text: text.trim(),
           image: imagePreview,
         });
