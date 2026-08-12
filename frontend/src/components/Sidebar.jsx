@@ -145,13 +145,21 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         onOpenInvite={() => setIsInviteOpen(true)}
         onLogout={handleLogout}
         onExpand={() => setIsCollapsed(false)}
-        groups={groups}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        groups={filteredGroups}
         users={filteredUsers}
         onlineUsers={onlineUsers}
         selectedGroup={selectedGroup}
         selectedUser={selectedUser}
         onSelectGroup={handleSelectGroup}
         onSelectUser={handleSelectUser}
+        pendingRequests={pendingRequests}
+        onCreateGroup={() => setIsCreatingGroup(true)}
+        recommendedUsers={recommendedUsers}
+        sendFriendRequest={sendFriendRequest}
+        acceptFriendRequest={acceptFriendRequest}
+        declineFriendRequest={declineFriendRequest}
       />
     );
   }
