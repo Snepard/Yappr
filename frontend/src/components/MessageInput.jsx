@@ -1,97 +1,23 @@
 import { useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Image, Send, X } from "lucide-react";
+import { useGroupStore } from "../store/useGroupStore";
+import { axiosInstance } from "../lib/axios";
+import { Image, Send, X, ShieldAlert } from "lucide-react";
 import toast from "react-hot-toast";
-
-const Tooltip = ({ children, label, position = "top" }) => {
-  const [coords, setCoords] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const targetRef = useRef(null);
-
-  const handleMouseEnter = () => {
-    if (targetRef.current) {
-      const rect = targetRef.current.getBoundingClientRect();
-      setCoords(rect);
-      setVisible(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setVisible(false);
-  };
-
-  if (!label) return children;
-
-  let tooltipStyle = {};
-  if (coords) {
-    if (position === "right") {
-      tooltipStyle = {
-        top: `${coords.top + coords.height / 2}px`,
-        left: `${coords.right + 12}px`,
-        transform: "translateY(-50%)",
-      };
-    } else if (position === "left") {
-      tooltipStyle = {
-        top: `${coords.top + coords.height / 2}px`,
-        left: `${coords.left - 12}px`,
-        transform: "translate(-100%, -50%)",
-      };
-    } else if (position === "top") {
-      tooltipStyle = {
-        top: `${coords.top - 12}px`,
-        left: `${coords.left + coords.width / 2}px`,
-        transform: "translate(-50%, -100%)",
-      };
-    } else if (position === "bottom") {
-      tooltipStyle = {
-        top: `${coords.bottom + 12}px`,
-        left: `${coords.left + coords.width / 2}px`,
-        transform: "translate(-50%, 0)",
-      };
-    }
-  }
-
-  return (
-    <div
-      ref={targetRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="relative inline-flex items-center justify-center"
-    >
-      {children}
-      {visible && coords && (
-        <div
-          style={tooltipStyle}
-          className="fixed px-3 py-1.5 bg-[#111214] text-white text-[12px] font-bold rounded-xl shadow-2xl backdrop-blur-md whitespace-nowrap z-[9999] pointer-events-none transition-all duration-150 ease-out flex items-center justify-center select-none"
-        >
-          {/* Discord-style Arrow Pointer */}
-          {position === "right" && (
-            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "left" && (
-            <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "top" && (
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "bottom" && (
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-
-          <span className="relative z-10">{label}</span>
-        </div>
-      )}
-    </div>
-  );
-};
+import Tooltip from "./Tooltip";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+  
   const { sendMessage } = useChatStore();
+  const { selectedGroup, activeTimeout } = useGroupStore();
+
+  const isTimedOut = Boolean(selectedGroup && activeTimeout?.isTimedOut);
 
   const handleImageChange = (e) => {
+    if (isTimedOut) return;
     const file = e.target.files[0];
     if (!file) return;
     
@@ -119,20 +45,33 @@ const MessageInput = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
+    if (isTimedOut) {
+      toast.error("You are timed out in this group and cannot send messages.");
+      return;
+    }
     if (!text.trim() && !imagePreview) return;
 
     try {
-      await sendMessage({
-        text: text.trim(),
-        image: imagePreview,
-      });
+      if (selectedGroup) {
+        // Send Group Message
+        await axiosInstance.post(`/messages/send/group/${selectedGroup._id}`, {
+          text: text.trim(),
+          image: imagePreview,
+        });
+      } else {
+        // Send Direct Message
+        await sendMessage({
+          text: text.trim(),
+          image: imagePreview,
+        });
+      }
 
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
-      toast.error("Failed to send message");
+      toast.error(error.response?.data?.message || "Failed to send message");
     }
   };
 
@@ -176,12 +115,15 @@ const MessageInput = () => {
       <form onSubmit={handleSendMessage} className="flex items-end gap-2 sm:gap-3">
         <div className="flex-1 relative">
           <textarea
-            className="w-full resize-none min-h-[2.5rem] sm:min-h-[2.75rem] max-h-32 
+            disabled={isTimedOut}
+            className={`w-full resize-none min-h-[2.5rem] sm:min-h-[2.75rem] max-h-32 
                        py-2.5 sm:py-3 pl-4 pr-11 text-xs sm:text-sm leading-relaxed placeholder:text-gray-400
-                       bg-sky-50/60 rounded-2xl border border-sky-200/70
-                       focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400
-                       transition-all duration-200 overflow-hidden"
-            placeholder="Message..."
+                       rounded-2xl border transition-all duration-200 overflow-hidden ${
+                         isTimedOut
+                           ? "bg-amber-100/50 border-amber-300 text-amber-900 placeholder:text-amber-700/60 font-semibold cursor-not-allowed"
+                           : "bg-sky-50/60 border-sky-200/70 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                       }`}
+            placeholder={isTimedOut ? "🔒 You are currently timed out in this group (Read-only mode)" : "Message..."}
             value={text}
             onChange={handleTextareaInput}
             onKeyPress={handleKeyPress}
@@ -194,15 +136,16 @@ const MessageInput = () => {
           />
           
           <div className="absolute right-2.5 bottom-2.5">
-            <Tooltip label="Attach image" position="top">
+            <Tooltip label={isTimedOut ? "Timed out" : "Attach image"} position="top">
               <button
                 type="button"
-                className={`p-1.5 rounded-xl transition-all duration-200 hover:scale-110
-                           ${imagePreview 
+                disabled={isTimedOut}
+                className={`p-1.5 rounded-xl transition-all duration-200
+                           ${isTimedOut ? "text-gray-300 cursor-not-allowed" : imagePreview 
                              ? "text-blue-600 bg-blue-50" 
                              : "text-gray-400 hover:text-blue-600 hover:bg-sky-100/60"
                            }`}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => !isTimedOut && fileInputRef.current?.click()}
               >
                 <Image className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -216,17 +159,18 @@ const MessageInput = () => {
           className="hidden"
           ref={fileInputRef}
           onChange={handleImageChange}
+          disabled={isTimedOut}
         />
 
-        <Tooltip label="Send message" position="top">
+        <Tooltip label={isTimedOut ? "Timed out" : "Send message"} position="top">
           <button
             type="submit"
-            disabled={!text.trim() && !imagePreview}
+            disabled={isTimedOut || (!text.trim() && !imagePreview)}
             className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center transition-all duration-200 
                        shadow-xs hover:shadow-md flex-shrink-0 ${
-              (!text.trim() && !imagePreview)
+              isTimedOut || (!text.trim() && !imagePreview)
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
-                : "bg-gradient-to-r from-blue-600 to-sky-600 text-white hover:scale-105 hover:from-blue-700 hover:to-sky-700"
+                : "bg-gradient-to-r from-blue-600 to-sky-600 text-white hover:scale-105 hover:from-blue-700 hover:to-sky-700 cursor-pointer"
             }`}
           >
             <Send className="w-4 h-4 sm:w-5 sm:h-5" />

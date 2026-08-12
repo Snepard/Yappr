@@ -1,11 +1,14 @@
 import { useChatStore } from "../store/useChatStore";
+import { useGroupStore } from "../store/useGroupStore";
 import { useEffect, useRef, useState } from "react";
 import { Trash2, Ban, ChevronDown, Copy, Forward } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { axiosInstance } from "../lib/axios";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
+import GroupTimeoutBanner from "./GroupTimeoutBanner";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import ForwardModal from "./ForwardModal";
 import { useAuthStore } from "../store/useAuthStore";
@@ -23,15 +26,73 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
     unsubscribeFromMessages,
     deleteMessage,
   } = useChatStore();
-  const { authUser } = useAuthStore();
+  const { selectedGroup, activeTimeout } = useGroupStore();
+  const { authUser, socket } = useAuthStore();
   const triggerDeleteAnimation = useDeleteAnimationStore((state) => state.triggerDeleteAnimation);
   
+  const [groupMessages, setGroupMessages] = useState([]);
+  const [isGroupMessagesLoading, setIsGroupMessagesLoading] = useState(false);
+
   const messageEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
   const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
   const [forwardModalMessage, setForwardModalMessage] = useState(null);
   const touchTimerRef = useRef(null);
+
+  const isGroupMode = Boolean(selectedGroup);
+  const currentMessages = isGroupMode ? groupMessages : messages;
+  const isLoading = isGroupMode ? isGroupMessagesLoading : isMessagesLoading;
+
+  // Fetch Group Messages when selectedGroup changes
+  useEffect(() => {
+    if (!selectedGroup) return;
+
+    const fetchGroupMessages = async () => {
+      setIsGroupMessagesLoading(true);
+      try {
+        const res = await axiosInstance.get(`/messages/group/${selectedGroup._id}`);
+        setGroupMessages(res.data);
+      } catch (err) {
+        toast.error("Failed to load group messages");
+      } finally {
+        setIsGroupMessagesLoading(false);
+      }
+    };
+
+    fetchGroupMessages();
+  }, [selectedGroup?._id]);
+
+  // Subscribe to real-time group message events
+  useEffect(() => {
+    if (!socket || !selectedGroup) return;
+
+    const handleNewGroupMessage = (msg) => {
+      if (msg.groupId?.toString() === selectedGroup._id.toString()) {
+        setGroupMessages((prev) => [...prev, msg]);
+      }
+    };
+
+    const handleGroupMessageDeleted = ({ messageId, groupId }) => {
+      if (groupId?.toString() === selectedGroup._id.toString()) {
+        setGroupMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === messageId
+              ? { ...msg, isDeleted: true, text: "This message was deleted", image: "" }
+              : msg
+          )
+        );
+      }
+    };
+
+    socket.on("newGroupMessage", handleNewGroupMessage);
+    socket.on("messageDeleted", handleGroupMessageDeleted);
+
+    return () => {
+      socket.off("newGroupMessage", handleNewGroupMessage);
+      socket.off("messageDeleted", handleGroupMessageDeleted);
+    };
+  }, [socket, selectedGroup?._id]);
 
   // Close dropdown menu on click outside
   useEffect(() => {
@@ -79,18 +140,18 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
       clearTimeout(timeoutId1);
       clearTimeout(timeoutId2);
     };
-  }, [messages]);
+  }, [currentMessages]);
 
   useEffect(() => {
-    if (selectedUser?._id) {
+    if (selectedUser?._id && !selectedGroup) {
       getMessages(selectedUser._id);
       subscribeToMessages();
     }
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser?._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedUser?._id, selectedGroup, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
-  if (isMessagesLoading) {
+  if (isLoading) {
     return (
       <div className="flex-1 flex flex-col h-full">
         <ChatHeader
@@ -112,11 +173,16 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
+      {/* Timeout Countdown Banner for Group Chat */}
+      {isGroupMode && activeTimeout?.isTimedOut && activeTimeout?.until && (
+        <GroupTimeoutBanner until={activeTimeout.until} />
+      )}
+
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
       >
-        {!messages || messages?.length === 0 ? (
+        {!currentMessages || currentMessages?.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-gray-600 h-full px-4 min-h-[300px]">
             <div className="text-center bg-white/70 backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-sm border border-sky-100 max-w-sm lg:max-w-md w-full">
               <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
@@ -125,14 +191,42 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
                 </svg>
               </div>
               <p className="text-lg font-bold mb-1 text-gray-800">No messages yet</p>
-              <p className="text-xs text-gray-500">Send a message to start chatting with {selectedUser?.fullName}!</p>
+              <p className="text-xs text-gray-500">
+                {isGroupMode
+                  ? `Send a message to start chatting in ${selectedGroup?.name}!`
+                  : `Send a message to start chatting with ${selectedUser?.fullName}!`}
+              </p>
             </div>
           </div>
         ) : (
-          messages?.map((message, index) => {
-            const isOwnMessage = message.senderId === authUser._id;
-            const showAvatar = index === 0 || messages[index - 1].senderId !== message.senderId;
-            const isLastMessage = index === messages.length - 1;
+          currentMessages?.map((message, index) => {
+            const isLastMessage = index === currentMessages.length - 1;
+
+            if (message.isSystemMessage) {
+              return (
+                <div
+                  key={message._id}
+                  ref={isLastMessage ? messageEndRef : null}
+                  className="flex justify-center my-2.5 w-full"
+                >
+                  <div className="bg-sky-100/90 backdrop-blur-xs border border-sky-200/70 text-slate-700 text-xs font-semibold px-4 py-1.5 rounded-full shadow-2xs text-center max-w-xs sm:max-w-md ring-1 ring-sky-400/20">
+                    {message.text}
+                  </div>
+                </div>
+              );
+            }
+
+            const senderIdStr = (message.senderId?._id || message.senderId)?.toString();
+            const isOwnMessage = senderIdStr === authUser._id.toString();
+            const prevSenderIdStr = index > 0 ? (currentMessages[index - 1].senderId?._id || currentMessages[index - 1].senderId)?.toString() : null;
+            const showAvatar = index === 0 || prevSenderIdStr !== senderIdStr;
+
+            const senderPic = isOwnMessage
+              ? authUser.profilePic || "/avatar.png"
+              : (message.senderId?.profilePic || selectedUser?.profilePic || "/avatar.png");
+            const senderName = isOwnMessage
+              ? authUser.fullName
+              : (message.senderId?.fullName || selectedUser?.fullName || "Group Member");
             
             return (
               <div
@@ -146,12 +240,8 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
                     {showAvatar && (
                       <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white shadow-xs overflow-hidden">
                         <img
-                          src={
-                            isOwnMessage
-                              ? authUser.profilePic || "/avatar.png"
-                              : selectedUser.profilePic || "/avatar.png"
-                          }
-                          alt="profile pic"
+                          src={senderPic}
+                          alt={senderName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.src = "/avatar.png";
@@ -164,8 +254,11 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
                   {/* Message content */}
                   <div className={`flex flex-col min-w-0 flex-1 ${isOwnMessage ? "items-end" : "items-start"}`}>
                     {showAvatar && (
-                      <div className="text-[11px] text-gray-400 mb-1 px-1 font-medium">
-                        {formatMessageTime(message.createdAt)}
+                      <div className="text-[11px] text-gray-400 mb-1 px-1 font-medium flex items-center space-x-1.5">
+                        {isGroupMode && !isOwnMessage && (
+                          <span className="font-bold text-gray-700">{senderName} •</span>
+                        )}
+                        <span>{formatMessageTime(message.createdAt)}</span>
                       </div>
                     )}
                     

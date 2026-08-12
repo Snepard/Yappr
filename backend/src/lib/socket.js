@@ -2,7 +2,9 @@ import { Server } from "socket.io";
 import http from "http";
 import express from "express";
 import jwt from "jsonwebtoken";
-import { parseCookie } from "cookie";
+import * as cookie from "cookie";
+
+const parseCookie = cookie.parseCookie || cookie.parse;
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +20,15 @@ const io = new Server(server, {
 
 export function getReceiverSocketId(userID) {
     return userSocketMap[userID];
+}
+
+export function getUserOnlineSockets(userIds) {
+    const socketIds = [];
+    userIds.forEach((id) => {
+        const socketId = userSocketMap[id?.toString()];
+        if (socketId) socketIds.push(socketId);
+    });
+    return socketIds;
 }
 
 const userSocketMap = {};    //{userId: socketId}
@@ -58,6 +69,21 @@ io.on("connection", (socket) => {
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
+    // Handle joining group rooms
+    socket.on("joinGroupRoom", (groupId) => {
+        if (groupId) {
+            socket.join(`group_${groupId}`);
+            console.log(`User ${userId} joined room group_${groupId}`);
+        }
+    });
+
+    socket.on("leaveGroupRoom", (groupId) => {
+        if (groupId) {
+            socket.leave(`group_${groupId}`);
+            console.log(`User ${userId} left room group_${groupId}`);
+        }
+    });
+
     socket.on("disconnect", () => {
         console.log("User disconnected:", socket.id);
         delete userSocketMap[userId];
@@ -65,4 +91,4 @@ io.on("connection", (socket) => {
     });
 });
 
-export { io, app, server };
+export { io, app, server };

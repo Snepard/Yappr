@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
-import InviteModal from "./InviteModal";
 import { confirmLogout } from "../lib/confirmToast";
 
 const Navbar = () => {
@@ -125,7 +124,6 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-      <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </>
   );
 };

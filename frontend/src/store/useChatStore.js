@@ -2,6 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
+import { useGroupStore } from "./useGroupStore";
 import {
   getPrivateKeyLocally,
   importPrivateKeyFromJWK,
@@ -49,19 +50,26 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
 
-  setIsInviteOpen: (isOpen) =>
+  setIsInviteOpen: (isOpen) => {
+    if (isOpen) {
+      useGroupStore.getState().setSelectedGroup(null);
+      useGroupStore.getState().setIsCreatingGroup(false);
+    }
     set((state) => ({
       isInviteOpen: isOpen,
       selectedUser: isOpen ? null : state.selectedUser,
-    })),
+    }));
+  },
 
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
       const res = await axiosInstance.get("/messages/users");
-      set({ users: res.data });
+      set({ users: Array.isArray(res.data) ? res.data : [] });
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("Error in getUsers:", error);
+      toast.error(error.response?.data?.message || "Failed to load contacts");
+      set({ users: [] });
     } finally {
       set({ isUsersLoading: false });
     }
@@ -232,6 +240,12 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser, isInviteOpen: false }),
+  setSelectedUser: (selectedUser) => {
+    if (selectedUser) {
+      useGroupStore.getState().setSelectedGroup(null);
+      useGroupStore.getState().setIsCreatingGroup(false);
+    }
+    set({ selectedUser, isInviteOpen: false });
+  },
 }));
 

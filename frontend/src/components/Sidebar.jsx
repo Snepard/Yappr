@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useFriendStore } from "../store/useFriendStore";
+import { useGroupStore } from "../store/useGroupStore";
 import { Link } from "react-router-dom";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import {
@@ -20,95 +21,27 @@ import {
   Share2,
   PanelLeftClose,
   PanelLeftOpen,
+  Plus,
+  Info,
 } from "lucide-react";
-import InviteModal from "./InviteModal";
 import { confirmLogout, confirmToast } from "../lib/confirmToast";
 
-const Tooltip = ({ children, label, position = "right" }) => {
-  const [coords, setCoords] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const targetRef = useRef(null);
-
-  const handleMouseEnter = () => {
-    if (targetRef.current) {
-      const rect = targetRef.current.getBoundingClientRect();
-      setCoords(rect);
-      setVisible(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setVisible(false);
-  };
-
-  if (!label) return children;
-
-  let tooltipStyle = {};
-  if (coords) {
-    if (position === "right") {
-      tooltipStyle = {
-        top: `${coords.top + coords.height / 2}px`,
-        left: `${coords.right + 12}px`,
-        transform: "translateY(-50%)",
-      };
-    } else if (position === "left") {
-      tooltipStyle = {
-        top: `${coords.top + coords.height / 2}px`,
-        left: `${coords.left - 12}px`,
-        transform: "translate(-100%, -50%)",
-      };
-    } else if (position === "top") {
-      tooltipStyle = {
-        top: `${coords.top - 12}px`,
-        left: `${coords.left + coords.width / 2}px`,
-        transform: "translate(-50%, -100%)",
-      };
-    } else if (position === "bottom") {
-      tooltipStyle = {
-        top: `${coords.bottom + 12}px`,
-        left: `${coords.left + coords.width / 2}px`,
-        transform: "translate(-50%, 0)",
-      };
-    }
-  }
-
-  return (
-    <div
-      ref={targetRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="relative inline-flex items-center justify-center"
-    >
-      {children}
-      {visible && coords && (
-        <div
-          style={tooltipStyle}
-          className="fixed px-3 py-1.5 bg-[#111214] text-white text-[12px] font-bold rounded-xl shadow-2xl backdrop-blur-md whitespace-nowrap z-[9999] pointer-events-none transition-all duration-150 ease-out flex items-center justify-center select-none"
-        >
-          {/* Discord-style Arrow Pointer */}
-          {position === "right" && (
-            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "left" && (
-            <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "top" && (
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-          {position === "bottom" && (
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#111214] rotate-45 rounded-xs" />
-          )}
-
-          <span className="relative z-10">{label}</span>
-        </div>
-      )}
-    </div>
-  );
-};
+import Tooltip from "./Tooltip";
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, setIsInviteOpen } = useChatStore();
   const { onlineUsers, authUser, logout } = useAuthStore();
+  const {
+    groups,
+    getGroups,
+    selectedGroup,
+    setSelectedGroup,
+    setIsCreatingGroup,
+    setIsGroupInfoOpen,
+    subscribeToGroupEvents,
+    unsubscribeFromGroupEvents,
+  } = useGroupStore();
+
   const {
     searchResults,
     isSearching,
@@ -126,12 +59,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     unsubscribeFromFriendEvents,
   } = useFriendStore();
 
-  const [activeTab, setActiveTab] = useState("chats"); // "chats" | "find" | "requests"
+  const [activeTab, setActiveTab] = useState("chats"); // "chats" | "groups" | "find" | "requests"
+  const [collapsedTab, setCollapsedTab] = useState("chats"); // "chats" | "groups"
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const fixedDropdownRef = useRef(null);
   const collapsedAsideRef = useRef(null);
@@ -139,11 +72,25 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   useEffect(() => {
     getUsers();
+    getGroups();
     getFriendRequests();
     getRecommendedFriends();
     subscribeToFriendEvents();
-    return () => unsubscribeFromFriendEvents();
-  }, [getUsers, getFriendRequests, getRecommendedFriends, subscribeToFriendEvents, unsubscribeFromFriendEvents]);
+    subscribeToGroupEvents();
+    return () => {
+      unsubscribeFromFriendEvents();
+      unsubscribeFromGroupEvents();
+    };
+  }, [
+    getUsers,
+    getGroups,
+    getFriendRequests,
+    getRecommendedFriends,
+    subscribeToFriendEvents,
+    subscribeToGroupEvents,
+    unsubscribeFromFriendEvents,
+    unsubscribeFromGroupEvents,
+  ]);
 
   // Fetch recommendations whenever switching to Find tab
   useEffect(() => {
@@ -212,8 +159,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       });
   }, [users, searchQuery, showOnlineOnly, onlineUsers]);
 
-  if (isUsersLoading) return <SidebarSkeleton />;
-
   // ----------------------------------------------------
   // RENDER MINI COLLAPSED SIDEBAR RAIL (Desktop Only)
   // ----------------------------------------------------
@@ -275,6 +220,17 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 <button
                   onClick={() => {
                     setShowProfileDropdown(false);
+                    setIsCreatingGroup(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-sky-50 transition-colors cursor-pointer"
+                >
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span>Create Group</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
                     setIsInviteOpen(true);
                   }}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 hover:bg-sky-50 transition-colors cursor-pointer"
@@ -294,100 +250,115 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             )}
           </div>
 
-          {/* Tab Shortcuts */}
-          <div className="flex flex-col gap-2.5 mb-4 w-full px-2">
-            <Tooltip label="Chats" position="right">
+          {/* Dual Toggle Switch (DMs vs GCs) */}
+          <div className="flex flex-col gap-1 p-1 bg-sky-100/70 backdrop-blur-md rounded-2xl w-full max-w-[48px] border border-sky-200/60 mb-2">
+            <Tooltip label="DMs" position="right">
               <button
-                onClick={() => {
-                  setActiveTab("chats");
-                  setIsCollapsed(false);
-                }}
-                className={`w-full py-2.5 rounded-xl flex items-center justify-center transition-all ${
-                  activeTab === "chats"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-500 hover:bg-sky-50 hover:text-blue-600"
+                onClick={() => setCollapsedTab("chats")}
+                className={`w-full py-2 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                  collapsedTab === "chats"
+                    ? "bg-blue-600 text-white shadow-sm font-bold"
+                    : "text-gray-500 hover:text-blue-600 hover:bg-white/60"
                 }`}
               >
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className="w-4 h-4" />
               </button>
             </Tooltip>
 
-            <Tooltip label="Find Friends" position="right">
+            <Tooltip label="GCs" position="right">
               <button
-                onClick={() => {
-                  setActiveTab("find");
-                  setIsCollapsed(false);
-                }}
-                className={`w-full py-2.5 rounded-xl flex items-center justify-center transition-all ${
-                  activeTab === "find"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-500 hover:bg-sky-50 hover:text-blue-600"
+                onClick={() => setCollapsedTab("groups")}
+                className={`w-full py-2 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                  collapsedTab === "groups"
+                    ? "bg-blue-600 text-white shadow-sm font-bold"
+                    : "text-gray-500 hover:text-blue-600 hover:bg-white/60"
                 }`}
               >
-                <UserPlus className="w-5 h-5" />
-              </button>
-            </Tooltip>
-
-            <Tooltip label="Friend Requests" position="right">
-              <button
-                onClick={() => {
-                  setActiveTab("requests");
-                  setIsCollapsed(false);
-                }}
-                className={`w-full py-2.5 rounded-xl flex items-center justify-center relative transition-all ${
-                  activeTab === "requests"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-500 hover:bg-sky-50 hover:text-blue-600"
-                }`}
-              >
-                <UserCheck className="w-5 h-5" />
-                {pendingRequests.length > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {pendingRequests.length}
-                  </span>
-                )}
+                <Users className="w-4 h-4" />
               </button>
             </Tooltip>
           </div>
 
-          <div className="w-8 h-[1px] bg-sky-200/80 my-2" />
+          <div className="w-8 h-[1px] bg-sky-200/80 my-1" />
 
-          {/* Mini Contact Avatars */}
-          <div className="flex-1 overflow-y-auto w-full px-2 py-3 space-y-3 flex flex-col items-center">
-            {filteredUsers.map((user) => {
-              const isSelected = selectedUser?._id === user._id;
-              const isOnline = onlineUsers.includes(user._id);
-
-              return (
-                <Tooltip key={user._id} label={user.fullName} position="right">
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    className={`relative group rounded-full transition-all p-0.5 ${
-                      isSelected ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
-                    }`}
+          {/* Collapsed Rail Avatars (Filtered by collapsedTab toggle) */}
+          <div className="flex-1 overflow-y-auto w-full px-2 py-2 space-y-3 flex flex-col items-center custom-scrollbar">
+            {collapsedTab === "groups" ? (
+              /* GROUP CHATS ONLY */
+              groups.map((group) => {
+                const isSelected = selectedGroup?._id === group._id;
+                return (
+                  <Tooltip
+                    key={group._id}
+                    label={`${group.name} • ${group.members?.length || 0} members`}
+                    position="right"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white shadow-xs">
-                      <img
-                        src={user.profilePic || "/avatar.png"}
-                        alt={user.fullName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "/avatar.png";
-                        }}
-                      />
-                    </div>
-                    <div
-                      className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                        isOnline ? "bg-green-500" : "bg-gray-300"
+                    <button
+                      onClick={() => {
+                        setSelectedUser(null);
+                        setSelectedGroup(group);
+                      }}
+                      className={`relative group transition-all p-0.5 rounded-2xl cursor-pointer ${
+                        isSelected ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
                       }`}
-                    />
-                  </button>
-                </Tooltip>
-              );
-            })}
-          </div>
+                    >
+                      <div className="w-10 h-10 rounded-2xl overflow-hidden border border-white shadow-xs bg-blue-50 flex items-center justify-center">
+                        {group.groupPic ? (
+                          <img
+                            src={group.groupPic}
+                            alt={group.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Users className="w-5 h-5 text-blue-600" />
+                        )}
+                      </div>
+                      {/* Group Icon Badge */}
+                      <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center border-2 border-white shadow-2xs">
+                        <Users className="w-2.5 h-2.5" />
+                      </div>
+                    </button>
+                  </Tooltip>
+                );
+              })
+            ) : (
+              /* DIRECT MESSAGES ONLY */
+              filteredUsers.map((user) => {
+                const isSelected = selectedUser?._id === user._id;
+                const isOnline = onlineUsers.includes(user._id);
 
-          <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
+                return (
+                  <Tooltip key={user._id} label={user.fullName} position="right">
+                    <button
+                      onClick={() => {
+                        setSelectedGroup(null);
+                        setSelectedUser(user);
+                      }}
+                      className={`relative group rounded-full transition-all p-0.5 cursor-pointer ${
+                        isSelected ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-white shadow-xs">
+                        <img
+                          src={user.profilePic || "/avatar.png"}
+                          alt={user.fullName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "/avatar.png";
+                          }}
+                        />
+                      </div>
+                      <div
+                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                          isOnline ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                      />
+                    </button>
+                  </Tooltip>
+                );
+              })
+            )}
+          </div>
         </aside>
 
         {/* Mobile Full Width View (WhatsApp style) */}
@@ -670,6 +641,18 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
                 <button
                   onClick={() => {
                     setShowProfileDropdown(false);
+                    setIsCreatingGroup(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r 
+                             hover:from-blue-50 hover:to-sky-50 transition-all duration-200 cursor-pointer"
+                >
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span className="font-medium">Create Group</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowProfileDropdown(false);
                     setIsInviteOpen(true);
                   }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r 
@@ -704,8 +687,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         {/* Navigation Tabs */}
         <div className="flex bg-gray-100/80 p-1 rounded-xl gap-1">
           <button
-            onClick={() => setActiveTab("chats")}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            onClick={() => {
+              setActiveTab("chats");
+            }}
+            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               activeTab === "chats"
                 ? "bg-white text-blue-700 shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
@@ -716,8 +701,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           </button>
 
           <button
-            onClick={() => setActiveTab("find")}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+            onClick={() => {
+              setActiveTab("find");
+              setIsInviteOpen(false);
+              setIsCreatingGroup(false);
+            }}
+            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               activeTab === "find"
                 ? "bg-white text-blue-700 shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
@@ -728,8 +717,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           </button>
 
           <button
-            onClick={() => setActiveTab("requests")}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 relative transition-all ${
+            onClick={() => {
+              setActiveTab("requests");
+              setIsInviteOpen(false);
+              setIsCreatingGroup(false);
+            }}
+            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 relative transition-all cursor-pointer ${
               activeTab === "requests"
                 ? "bg-white text-blue-700 shadow-xs"
                 : "text-gray-600 hover:text-gray-900"
@@ -787,72 +780,159 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
               </div>
             </div>
 
-            <div className="flex-1 p-3 overflow-y-auto">
-              {filteredUsers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 text-gray-400 px-4 text-center">
-                  <Users className="w-9 h-9 mb-2 opacity-40 text-blue-500" />
-                  <p className="text-sm font-semibold text-gray-700 mb-1">
-                    {searchQuery ? "No friends found" : "No friends yet"}
-                  </p>
-                  <p className="text-xs text-gray-500 mb-3">
-                    {searchQuery
-                      ? "Try searching another name"
-                      : "Search usernames in 'Find' tab to send friend requests!"}
-                  </p>
-                  {!searchQuery && (
-                    <button
-                      onClick={() => setActiveTab("find")}
-                      className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white text-xs font-semibold rounded-lg shadow-xs hover:opacity-90"
-                    >
-                      Find Friends
-                    </button>
-                  )}
+            <div className="flex-1 p-3 overflow-y-auto space-y-4">
+              {/* GROUPS SECTION (At Top of Chats) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5" /> Group Chats ({groups.length})
+                  </span>
+                  <button
+                    onClick={() => setIsCreatingGroup(true)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 rounded-xl shadow-xs transition-all duration-200 active:scale-95 cursor-pointer ring-1 ring-sky-400/30"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>New Group</span>
+                  </button>
                 </div>
-              ) : (
-                filteredUsers.map((user) => {
-                  const isSelected = selectedUser?._id === user._id;
-                  const isOnline = onlineUsers.includes(user._id);
 
-                  return (
+                {groups.length === 0 ? (
+                  <div className="p-3 bg-blue-50/40 border border-blue-100/70 rounded-2xl text-center">
+                    <p className="text-xs text-gray-500 mb-2">No group chats created yet.</p>
                     <button
-                      key={user._id}
-                      onClick={() => setSelectedUser(user)}
-                      className={`w-full p-2.5 flex items-center gap-3 rounded-2xl transition-all duration-200 mb-1.5 ${
-                        isSelected
-                          ? "bg-gradient-to-r from-blue-100/90 to-sky-100/90 shadow-sm ring-2 ring-blue-200/50"
-                          : "hover:bg-sky-50/60"
-                      }`}
+                      onClick={() => setIsCreatingGroup(true)}
+                      className="px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 rounded-xl shadow-xs transition-all cursor-pointer"
                     >
-                      <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white shadow-xs">
-                          <img
-                            src={user.profilePic || "/avatar.png"}
-                            alt={user.fullName}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = "/avatar.png";
+                      + Create First Group
+                    </button>
+                  </div>
+                ) : (
+                  groups.map((group) => {
+                    const isSelected = selectedGroup?._id === group._id;
+                    return (
+                      <div
+                        key={group._id}
+                        onClick={() => {
+                          setSelectedUser(null);
+                          setSelectedGroup(group);
+                        }}
+                        className={`w-full p-2.5 flex items-center gap-3 rounded-2xl transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "bg-gradient-to-r from-blue-100/90 to-sky-100/90 shadow-sm ring-2 ring-blue-200/50"
+                            : "hover:bg-sky-50/60 bg-white/70 border border-sky-100/40"
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-2xl overflow-hidden ring-2 ring-white shadow-xs bg-blue-50 flex items-center justify-center shrink-0">
+                          {group.groupPic ? (
+                            <img
+                              src={group.groupPic}
+                              alt={group.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Users className="w-5 h-5 text-blue-600" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-gray-800 truncate">{group.name}</span>
+                            <span className="text-[10px] text-gray-400">
+                              {group.members?.length || 0} members
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 truncate">
+                            {group.lastMessageText || group.description || "Group chat"}
+                          </p>
+                        </div>
+
+                        <Tooltip label="Group Settings & Info" position="left">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedUser(null);
+                              setSelectedGroup(group);
+                              setIsGroupInfoOpen(true);
                             }}
+                            className="p-1.5 hover:bg-blue-100/80 rounded-xl text-gray-400 hover:text-blue-600 transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Info className="w-4 h-4" />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* DIRECT CONTACTS SECTION (Below Groups) */}
+              <div className="space-y-2 pt-2 border-t border-gray-100">
+                <div className="px-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" /> Direct Messages ({filteredUsers.length})
+                  </span>
+                </div>
+
+                {filteredUsers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-gray-400 px-4 text-center">
+                    <p className="text-xs font-semibold text-gray-700 mb-1">
+                      {searchQuery ? "No friends found" : "No direct contacts yet"}
+                    </p>
+                    <p className="text-[11px] text-gray-500 mb-2">
+                      {searchQuery
+                        ? "Try searching another name"
+                        : "Search usernames in 'Find' tab to send friend requests!"}
+                    </p>
+                  </div>
+                ) : (
+                  filteredUsers.map((user) => {
+                    const isSelected = selectedUser?._id === user._id;
+                    const isOnline = onlineUsers.includes(user._id);
+
+                    return (
+                      <button
+                        key={user._id}
+                        onClick={() => {
+                          setSelectedGroup(null);
+                          setSelectedUser(user);
+                        }}
+                        className={`w-full p-2.5 flex items-center gap-3 rounded-2xl transition-all duration-200 ${
+                          isSelected
+                            ? "bg-gradient-to-r from-blue-100/90 to-sky-100/90 shadow-sm ring-2 ring-blue-200/50"
+                            : "hover:bg-sky-50/60"
+                        }`}
+                      >
+                        <div className="relative flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white shadow-xs">
+                            <img
+                              src={user.profilePic || "/avatar.png"}
+                              alt={user.fullName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = "/avatar.png";
+                              }}
+                            />
+                          </div>
+                          <div
+                            className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                              isOnline ? "bg-green-500" : "bg-gray-300"
+                            }`}
                           />
                         </div>
-                        <div
-                          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                            isOnline ? "bg-green-500" : "bg-gray-300"
-                          }`}
-                        />
-                      </div>
 
-                      <div className="flex-1 min-w-0 text-left">
-                        <div className="font-semibold text-sm text-gray-800 truncate">
-                          {user.fullName}
+                        <div className="flex-1 min-w-0 text-left">
+                          <div className="font-semibold text-sm text-gray-800 truncate">
+                            {user.fullName}
+                          </div>
+                          <div className="text-xs text-blue-600 font-medium truncate">
+                            @{user.username || user.email?.split("@")[0]}
+                          </div>
                         </div>
-                        <div className="text-xs text-blue-600 font-medium truncate">
-                          @{user.username || user.email?.split("@")[0]}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1117,7 +1197,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           </div>
         )}
       </div>
-      <InviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} />
     </aside>
   );
 };
