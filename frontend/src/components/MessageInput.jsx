@@ -112,12 +112,12 @@ const MessageInput = () => {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="flex items-end gap-2 sm:gap-3">
-        <div className="flex-1 relative">
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2 sm:gap-3">
+        <div className="flex-1 relative flex items-center">
           <textarea
             disabled={isTimedOut}
             className={`w-full resize-none min-h-[2.5rem] sm:min-h-[2.75rem] max-h-32 
-                       py-2.5 sm:py-3 pl-4 pr-11 text-xs sm:text-sm leading-relaxed placeholder:text-gray-400
+                       py-2 sm:py-2.5 pl-4 pr-11 text-xs sm:text-sm leading-normal placeholder:text-gray-400
                        rounded-2xl border transition-all duration-200 overflow-hidden ${
                          isTimedOut
                            ? "bg-amber-100/50 border-amber-300 text-amber-900 placeholder:text-amber-700/60 font-semibold cursor-not-allowed"
@@ -131,16 +131,16 @@ const MessageInput = () => {
             style={{
               height: 'auto',
               minHeight: '2.5rem',
-              lineHeight: '1.5'
+              lineHeight: '1.4'
             }}
           />
           
-          <div className="absolute right-2.5 bottom-2.5">
+          <div className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center">
             <Tooltip label={isTimedOut ? "Timed out" : "Attach image"} position="top">
               <button
                 type="button"
                 disabled={isTimedOut}
-                className={`p-1.5 rounded-xl transition-all duration-200
+                className={`p-1.5 rounded-xl transition-all duration-200 flex items-center justify-center
                            ${isTimedOut ? "text-gray-300 cursor-not-allowed" : imagePreview 
                              ? "text-blue-600 bg-blue-50" 
                              : "text-gray-400 hover:text-blue-600 hover:bg-sky-100/60"

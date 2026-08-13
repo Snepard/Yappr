@@ -26,7 +26,7 @@ const HomePage = () => {
       <div className="h-screen w-screen relative z-10 flex overflow-hidden bg-slate-900/5 backdrop-blur-md transform-gpu">
         {/* Sidebar container */}
         <div
-          className={`h-full transition-all duration-300 ease-in-out flex-shrink-0 border-r border-sky-200/60 bg-white/80 backdrop-blur-2xl relative z-30 transform-gpu ${
+          className={`h-full flex-shrink-0 relative z-30 transform-gpu ${
             isRightWindowActive ? 'hidden md:flex' : 'flex w-full md:w-auto'
           }`}
         >

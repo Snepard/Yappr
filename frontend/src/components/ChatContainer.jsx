@@ -2,6 +2,10 @@ import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
 import toast from "react-hot-toast";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -36,7 +40,11 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
 
   const messageEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const scrollContentRef = useRef(null);
+  const lenisRef = useRef(null);
+  const isInitialLoadRef = useRef(true);
 
+  const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
   const [activeMenuMessageId, setActiveMenuMessageId] = useState(null);
   const [forwardModalMessage, setForwardModalMessage] = useState(null);
   const touchTimerRef = useRef(null);
@@ -45,11 +53,55 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   const currentMessages = isGroupMode ? groupMessages : messages;
   const isLoading = isGroupMode ? isGroupMessagesLoading : isMessagesLoading;
 
-  // Optimized smooth auto-scroll to bottom using single requestAnimationFrame
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+    setShowScrollBottomButton(distanceToBottom > 150);
+  }, []);
+
+  // Initialize Lenis Smooth Scroll on chat message container
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const lenis = new Lenis({
+      wrapper: scrollContainerRef.current,
+      content: scrollContentRef.current || scrollContainerRef.current.firstElementChild,
+      smoothWheel: true,
+      duration: 1.0,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      touchMultiplier: 1.5,
+    });
+
+    lenisRef.current = lenis;
+
+    lenis.on("scroll", () => {
+      handleScroll();
+    });
+
+    let rafId;
+    function update(time) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(update);
+    }
+    rafId = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, [handleScroll]);
+
+  // Optimized scroll to bottom using Lenis or native scroll fallback
   const scrollToBottom = useCallback((behavior = "smooth") => {
     requestAnimationFrame(() => {
-      if (messageEndRef.current) {
-        messageEndRef.current.scrollIntoView({ behavior, block: "end" });
+      const isInstant = behavior === "instant" || behavior === "auto";
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo("bottom", {
+          duration: isInstant ? 0 : 0.6,
+          immediate: isInstant,
+        });
       }
       if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
@@ -57,11 +109,23 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
     });
   }, []);
 
+  // Reset initial load state when conversation changes
+  useEffect(() => {
+    isInitialLoadRef.current = true;
+    setShowScrollBottomButton(false);
+  }, [selectedUser?._id, selectedGroup?._id]);
+
+  // Handle scroll to bottom on initial chat load and new messages
   useLayoutEffect(() => {
-    if (currentMessages && currentMessages.length > 0) {
-      scrollToBottom("smooth");
+    if (!isLoading && currentMessages && currentMessages.length > 0) {
+      if (isInitialLoadRef.current) {
+        scrollToBottom("instant");
+        isInitialLoadRef.current = false;
+      } else if (!showScrollBottomButton) {
+        scrollToBottom("smooth");
+      }
     }
-  }, [currentMessages, scrollToBottom]);
+  }, [currentMessages, isLoading, scrollToBottom, showScrollBottomButton]);
 
   // Handle direct 1-on-1 messages subscription
   useEffect(() => {
@@ -135,7 +199,7 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gradient-to-br from-slate-50/50 via-blue-50/40 to-sky-50/50">
+    <div className="flex-1 flex flex-col h-full bg-gradient-to-br from-slate-50/50 via-blue-50/40 to-sky-50/50 relative">
       <ChatHeader
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -146,69 +210,91 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
         <GroupTimeoutBanner until={activeTimeout.until} />
       )}
 
-      {/* Scrollable Messages Container */}
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
-      >
-        {!currentMessages || currentMessages.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-gray-600 h-full px-4 min-h-[300px]">
-            <div className="text-center bg-white/70 backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xs border border-sky-100 max-w-sm lg:max-w-md w-full">
-              <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
+      {/* Scrollable Messages Area */}
+      <div className="flex-1 relative min-h-0">
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="h-full overflow-y-auto p-4 sm:p-6 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
+        >
+          <div ref={scrollContentRef} className="space-y-4 flex flex-col justify-end min-h-full">
+            {!currentMessages || currentMessages.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center text-gray-600 h-full px-4 min-h-[300px]">
+                <div className="text-center bg-white/70 backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xs border border-sky-100 max-w-sm lg:max-w-md w-full">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <p className="text-lg font-bold mb-1 text-gray-800">No messages yet</p>
+                  <p className="text-xs text-gray-500">
+                    {isGroupMode
+                      ? `Send a message to start chatting in ${selectedGroup?.name}!`
+                      : `Send a message to start chatting with ${selectedUser?.fullName}!`}
+                  </p>
+                </div>
               </div>
-              <p className="text-lg font-bold mb-1 text-gray-800">No messages yet</p>
-              <p className="text-xs text-gray-500">
-                {isGroupMode
-                  ? `Send a message to start chatting in ${selectedGroup?.name}!`
-                  : `Send a message to start chatting with ${selectedUser?.fullName}!`}
-              </p>
-            </div>
+            ) : (
+              currentMessages.map((message, index) => {
+                const isLastMessage = index === currentMessages.length - 1;
+
+                const senderIdStr = (message.senderId?._id || message.senderId)?.toString();
+                const isOwnMessage = senderIdStr === authUser._id.toString();
+                const prevSenderIdStr =
+                  index > 0
+                    ? (currentMessages[index - 1].senderId?._id || currentMessages[index - 1].senderId)?.toString()
+                    : null;
+                const showAvatar = index === 0 || prevSenderIdStr !== senderIdStr;
+
+                const senderPic = isOwnMessage
+                  ? authUser.profilePic || "/avatar.png"
+                  : message.senderId?.profilePic || selectedUser?.profilePic || "/avatar.png";
+                const senderName = isOwnMessage
+                  ? authUser.fullName
+                  : message.senderId?.fullName || selectedUser?.fullName || "Group Member";
+
+                return (
+                  <ChatMessageItem
+                    key={message._id}
+                    message={message}
+                    isLastMessage={isLastMessage}
+                    isOwnMessage={isOwnMessage}
+                    showAvatar={showAvatar}
+                    senderPic={senderPic}
+                    senderName={senderName}
+                    isGroupMode={isGroupMode}
+                    activeMenuMessageId={activeMenuMessageId}
+                    setActiveMenuMessageId={setActiveMenuMessageId}
+                    onCopy={handleCopyText}
+                    onForward={handleForwardMessage}
+                    onDelete={handleDeleteMessage}
+                    handleTouchStart={handleTouchStart}
+                    handleTouchEnd={handleTouchEnd}
+                    messageEndRef={messageEndRef}
+                  />
+                );
+              })
+            )}
+            <div ref={messageEndRef} />
           </div>
-        ) : (
-          currentMessages.map((message, index) => {
-            const isLastMessage = index === currentMessages.length - 1;
+        </div>
 
-            const senderIdStr = (message.senderId?._id || message.senderId)?.toString();
-            const isOwnMessage = senderIdStr === authUser._id.toString();
-            const prevSenderIdStr =
-              index > 0
-                ? (currentMessages[index - 1].senderId?._id || currentMessages[index - 1].senderId)?.toString()
-                : null;
-            const showAvatar = index === 0 || prevSenderIdStr !== senderIdStr;
-
-            const senderPic = isOwnMessage
-              ? authUser.profilePic || "/avatar.png"
-              : message.senderId?.profilePic || selectedUser?.profilePic || "/avatar.png";
-            const senderName = isOwnMessage
-              ? authUser.fullName
-              : message.senderId?.fullName || selectedUser?.fullName || "Group Member";
-
-            return (
-              <ChatMessageItem
-                key={message._id}
-                message={message}
-                isLastMessage={isLastMessage}
-                isOwnMessage={isOwnMessage}
-                showAvatar={showAvatar}
-                senderPic={senderPic}
-                senderName={senderName}
-                isGroupMode={isGroupMode}
-                activeMenuMessageId={activeMenuMessageId}
-                setActiveMenuMessageId={setActiveMenuMessageId}
-                onCopy={handleCopyText}
-                onForward={handleForwardMessage}
-                onDelete={handleDeleteMessage}
-                handleTouchStart={handleTouchStart}
-                handleTouchEnd={handleTouchEnd}
-                messageEndRef={messageEndRef}
-              />
-            );
-          })
-        )}
-        <div ref={messageEndRef} />
+        {/* Floating Scroll to Bottom Arrow Button */}
+        <AnimatePresence>
+          {showScrollBottomButton && (
+            <motion.button
+              initial={{ opacity: 0, y: 12, scale: 0.85 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.85 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => scrollToBottom("smooth")}
+              className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 p-2.5 bg-white/90 backdrop-blur-xl border border-sky-200 text-blue-600 rounded-full shadow-lg shadow-blue-500/10 hover:bg-blue-50 hover:scale-110 active:scale-95 transition-all cursor-pointer group flex items-center justify-center"
+              title="Scroll to bottom"
+            >
+              <ChevronDown className="w-5 h-5 group-hover:translate-y-0.5 transition-transform stroke-[2.5]" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
       <MessageInput />

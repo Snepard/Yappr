@@ -16,23 +16,34 @@ export const signup = async (req,res) => {
         }
 
         const cleanUsername = username.trim().toLowerCase();
+        const cleanEmail = email.trim().toLowerCase();
+
         if (!/^[a-zA-Z0-9_.]+$/.test(cleanUsername)) {
             return res.status(400).json({ message: "Username can only contain letters, numbers, underscores, and dots" });
         }
 
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) return res.status(400).json({ message: "Email already exists" });
-
+        const existingEmail = await User.findOne({ 
+            email: { $regex: new RegExp(`^${cleanEmail.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')}$`, 'i') } 
+        });
         const existingUsername = await User.findOne({ username: cleanUsername });
-        if (existingUsername) return res.status(400).json({ message: "Username is already taken" });
+
+        if (existingEmail && existingUsername) {
+            return res.status(400).json({ message: "Username already exists and email already exists" });
+        }
+        if (existingEmail) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+        if (existingUsername) {
+            return res.status(400).json({ message: "Username already exists" });
+        }
         
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = new User({
-            fullName,
+            fullName: fullName.trim(),
             username: cleanUsername,
-            email,
+            email: cleanEmail,
             password: hashedPassword,
         });
 
@@ -52,6 +63,18 @@ export const signup = async (req,res) => {
         }
     } catch (error) {
         console.log("Error in signup controller", error.message);
+        if (error.code === 11000) {
+            const keys = Object.keys(error.keyPattern || error.keyValue || {});
+            if (keys.includes("email") && keys.includes("username")) {
+                return res.status(400).json({ message: "Username already exists and email already exists" });
+            }
+            if (keys.includes("email")) {
+                return res.status(400).json({ message: "Email already exists" });
+            }
+            if (keys.includes("username")) {
+                return res.status(400).json({ message: "Username already exists" });
+            }
+        }
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

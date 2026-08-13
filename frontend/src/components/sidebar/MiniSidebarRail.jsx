@@ -8,7 +8,6 @@ import {
   MessageSquare,
   Sparkles,
   UserCheck,
-  PanelLeftOpen,
   Plus,
   Check,
   X,
@@ -52,8 +51,8 @@ const MiniSidebarRail = memo(({
   }, [setShowProfileDropdown]);
 
   return (
-    <aside className="h-full hidden md:flex w-16 sm:w-20 transition-all duration-300 flex-col items-center py-3.5 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none">
-      {/* Top Header: App Logo & Expand Icon */}
+    <aside className="h-full hidden md:flex w-16 sm:w-20 relative transition-all duration-300 flex-col items-center py-3.5 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none overflow-hidden">
+      {/* Top Header: App Logo */}
       <div className="flex flex-col items-center gap-2 mb-3">
         <Tooltip label="Expand Sidebar" position="right">
           <button
@@ -65,15 +64,6 @@ const MiniSidebarRail = memo(({
               alt="YAPPR Logo"
               className="w-9 h-9 object-contain group-hover:scale-110 transition-transform drop-shadow-xs"
             />
-          </button>
-        </Tooltip>
-
-        <Tooltip label="Expand Sidebar" position="right">
-          <button
-            onClick={onExpand}
-            className="p-1.5 rounded-xl text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
-          >
-            <PanelLeftOpen className="w-4 h-4" />
           </button>
         </Tooltip>
       </div>

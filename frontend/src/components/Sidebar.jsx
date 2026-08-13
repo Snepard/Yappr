@@ -15,6 +15,8 @@ import FindFriendsTab from "./sidebar/FindFriendsTab";
 import RequestsTab from "./sidebar/RequestsTab";
 import MiniSidebarRail from "./sidebar/MiniSidebarRail";
 
+const MIN_SIDEBAR_WIDTH = 320;
+
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, setIsInviteOpen } = useChatStore();
   const { onlineUsers, authUser, logout } = useAuthStore();
@@ -50,6 +52,82 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem("yappr_sidebar_width");
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (!isNaN(parsed) && parsed >= MIN_SIDEBAR_WIDTH) return parsed;
+    }
+    return MIN_SIDEBAR_WIDTH;
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1280
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const maxAllowedWidth = useMemo(() => {
+    return Math.max(MIN_SIDEBAR_WIDTH, Math.floor(windowWidth * 0.30));
+  }, [windowWidth]);
+
+  useEffect(() => {
+    if (sidebarWidth > maxAllowedWidth) {
+      setSidebarWidth(maxAllowedWidth);
+    }
+  }, [maxAllowedWidth, sidebarWidth]);
+
+  const handleMouseDown = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDoubleClick = useCallback(() => {
+    setSidebarWidth(MIN_SIDEBAR_WIDTH);
+    localStorage.setItem("yappr_sidebar_width", MIN_SIDEBAR_WIDTH.toString());
+  }, []);
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => {
+      const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+      const maxW = Math.max(MIN_SIDEBAR_WIDTH, Math.floor(window.innerWidth * 0.30));
+      const clampedW = Math.min(maxW, Math.max(MIN_SIDEBAR_WIDTH, currentX));
+
+      setSidebarWidth(clampedW);
+      localStorage.setItem("yappr_sidebar_width", clampedW.toString());
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleMouseMove);
+    window.addEventListener("touchend", handleMouseUp);
+
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleMouseMove);
+      window.removeEventListener("touchend", handleMouseUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     getUsers();
@@ -165,7 +243,36 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   }
 
   return (
-    <aside className="h-full w-full md:w-80 transition-all duration-300 border-r border-sky-200/60 flex flex-col bg-white/90 backdrop-blur-xl select-none">
+    <aside
+      className={`h-full w-full relative border-r border-sky-200/60 flex flex-col bg-white/90 backdrop-blur-xl select-none overflow-hidden ${
+        isDragging ? "transition-none" : "transition-all duration-300"
+      }`}
+      style={{
+        width: windowWidth >= 768 ? `${sidebarWidth}px` : undefined,
+      }}
+    >
+      {/* Resizer Handle */}
+      <div
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
+        onDoubleClick={handleDoubleClick}
+        className="absolute top-0 bottom-0 -right-1.5 w-3 cursor-col-resize z-50 group flex items-center justify-center select-none touch-none"
+        title="Drag to resize sidebar (Double-click to reset width)"
+        role="separator"
+        aria-orientation="vertical"
+        aria-valuenow={sidebarWidth}
+        aria-valuemin={MIN_SIDEBAR_WIDTH}
+        aria-valuemax={maxAllowedWidth}
+      >
+        <div
+          className={`w-1 h-12 rounded-full transition-all duration-150 ${
+            isDragging
+              ? "bg-blue-500 shadow-md shadow-blue-500/50 scale-y-125 opacity-100"
+              : "bg-sky-300/60 group-hover:bg-blue-500 group-hover:scale-y-110 opacity-0 group-hover:opacity-100"
+          }`}
+        />
+      </div>
+
       {/* Header */}
       <SidebarHeader
         authUser={authUser}

@@ -64,7 +64,7 @@ export const useAuthStore = create((set, get) => ({
             get().connectSocket();
             get().initializeE2EEKeys(res.data);
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Signup failed");
         } finally {
             set ({ isSigningUp: false });
         }

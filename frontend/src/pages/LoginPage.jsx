@@ -131,7 +131,7 @@ const SigninPage = () => {
                   onFocus={() => handleFocus('email')}
                   onBlur={handleBlur}
                   className="w-full px-6 py-4 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                  placeholder="john@example.com or johndoe"
+                  placeholder="aryan@example.com or aryan"
                 />
                 {focused === 'email' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />

@@ -6,23 +6,14 @@ const NoChatSelected = ({ onOpenSidebar }) => {
       <div className="max-w-md text-center space-y-6 bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-sky-100 shadow-sm">
         {/* Icon Display */}
         <div className="flex justify-center mb-4">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 to-sky-500 
-                           flex items-center justify-center shadow-md text-white
-                           hover:scale-105 transition-all duration-300">
-              <MessageSquare className="w-10 h-10" />
-            </div>
-            
-            {/* Floating decorative elements */}
-            <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-cyan-100 border border-cyan-200
-                           flex items-center justify-center shadow-xs">
-              <Users className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            
-            <div className="absolute -bottom-2 -left-2 w-7 h-7 rounded-full bg-blue-100 border border-blue-200
-                           flex items-center justify-center shadow-xs">
-              <Zap className="w-3.5 h-3.5 text-blue-600" />
-            </div>
+          <div className="w-20 h-20 rounded-3xl bg-blue-50/80 p-3
+                         flex items-center justify-center shadow-md border border-sky-100
+                         hover:scale-105 transition-all duration-300">
+            <img
+              src="/YapprIcon.png"
+              alt="YAPPR Logo"
+              className="w-full h-full object-contain drop-shadow-xs"
+            />
           </div>
         </div>
 

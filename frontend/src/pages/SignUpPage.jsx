@@ -133,7 +133,7 @@ const SignupPage = () => {
                   onFocus={() => handleFocus('fullName')}
                   onBlur={handleBlur}
                   className="w-full px-4 py-2.5 bg-black/20 border-2 border-white/20 rounded-xl text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                  placeholder="John Doe"
+                  placeholder="Aryan Singh"
                 />
                 {focused === 'fullName' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
@@ -154,7 +154,7 @@ const SignupPage = () => {
                   onFocus={() => handleFocus('username')}
                   onBlur={handleBlur}
                   className="w-full px-4 py-2.5 bg-black/20 border-2 border-white/20 rounded-xl text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                  placeholder="johndoe"
+                  placeholder="aryansingh123"
                 />
                 {focused === 'username' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
@@ -175,7 +175,7 @@ const SignupPage = () => {
                   onFocus={() => handleFocus('email')}
                   onBlur={handleBlur}
                   className="w-full px-4 py-2.5 bg-black/20 border-2 border-white/20 rounded-xl text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
-                  placeholder="john@example.com"
+                  placeholder="aryan@example.com"
                 />
                 {focused === 'email' && (
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />

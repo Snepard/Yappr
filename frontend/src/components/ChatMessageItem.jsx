@@ -46,11 +46,12 @@ const ChatMessageItem = memo(({
         className={`flex max-w-[85%] sm:max-w-md lg:max-w-xl ${
           isOwnMessage ? "flex-row-reverse" : "flex-row"
         } items-end gap-2 sm:gap-3`}
+        style={{ transform: "translateZ(0)" }}
       >
         {/* Avatar */}
-        <div className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 ${showAvatar ? "" : "invisible"}`}>
+        <div className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 ${showAvatar ? "" : "invisible"} self-end mb-0.5`}>
           {showAvatar && (
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white shadow-xs overflow-hidden">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-white shadow-xs overflow-hidden shrink-0">
               <img
                 src={senderPic}
                 alt={senderName}
