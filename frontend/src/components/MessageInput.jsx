@@ -118,7 +118,7 @@ const MessageInput = () => {
             disabled={isTimedOut}
             className={`w-full resize-none min-h-[2.5rem] sm:min-h-[2.75rem] max-h-32 
                        py-2 sm:py-2.5 pl-4 pr-11 text-xs sm:text-sm leading-normal placeholder:text-gray-400
-                       rounded-2xl border transition-all duration-200 overflow-hidden ${
+                       rounded-3xl border transition-all duration-200 overflow-hidden ${
                          isTimedOut
                            ? "bg-amber-100/50 border-amber-300 text-amber-900 placeholder:text-amber-700/60 font-semibold cursor-not-allowed"
                            : "bg-sky-50/60 border-sky-200/70 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
@@ -140,7 +140,7 @@ const MessageInput = () => {
               <button
                 type="button"
                 disabled={isTimedOut}
-                className={`p-1.5 rounded-xl transition-all duration-200 flex items-center justify-center
+                className={`p-1.5 rounded-full transition-all duration-200 flex items-center justify-center
                            ${isTimedOut ? "text-gray-300 cursor-not-allowed" : imagePreview 
                              ? "text-blue-600 bg-blue-50" 
                              : "text-gray-400 hover:text-blue-600 hover:bg-sky-100/60"
@@ -166,7 +166,7 @@ const MessageInput = () => {
           <button
             type="submit"
             disabled={isTimedOut || (!text.trim() && !imagePreview)}
-            className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center transition-all duration-200 
+            className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-200 
                        shadow-xs hover:shadow-md flex-shrink-0 ${
               isTimedOut || (!text.trim() && !imagePreview)
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed" 

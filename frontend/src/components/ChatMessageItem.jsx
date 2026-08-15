@@ -82,12 +82,12 @@ const ChatMessageItem = memo(({
               onTouchMove={handleTouchEnd}
               className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 ${
                 !message.isDeleted ? "pr-7 sm:pr-8" : ""
-              } rounded-2xl border shadow-xs min-w-[120px] max-w-full group/msgbubble ${
+              } rounded-2xl sm:rounded-3xl border shadow-xs min-w-[120px] max-w-full group/msgbubble ${
                 message.isDeleted
                   ? "bg-slate-100/90 text-slate-400 border-slate-200/70 font-medium select-none"
                   : isOwnMessage
-                  ? "bg-gradient-to-r from-blue-600 to-sky-600 text-white border-blue-400/30 rounded-br-xs"
-                  : "bg-white text-gray-800 border-sky-100 rounded-bl-xs"
+                  ? "bg-gradient-to-r from-blue-600 to-sky-600 text-white border-blue-400/30 rounded-2xl sm:rounded-3xl rounded-br-md"
+                  : "bg-white text-gray-800 border-sky-100 rounded-2xl sm:rounded-3xl rounded-bl-md"
               }`}
             >
               {/* Options Chevron Trigger */}

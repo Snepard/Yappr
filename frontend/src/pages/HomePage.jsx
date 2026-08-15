@@ -22,40 +22,42 @@ const HomePage = () => {
       {/* Fixed Light Gradient Background */}
       <div className="gradient-bg-fixed" />
 
-      {/* Full-Screen Edge-to-Edge Application Workspace */}
-      <div className="h-screen w-screen relative z-10 flex overflow-hidden bg-slate-900/5 backdrop-blur-md transform-gpu">
-        {/* Sidebar container */}
-        <div
-          className={`h-full flex-shrink-0 relative z-30 transform-gpu ${
-            isRightWindowActive ? 'hidden md:flex' : 'flex w-full md:w-auto'
-          }`}
-        >
-          <Sidebar
-            isCollapsed={isSidebarCollapsed}
-            setIsCollapsed={setIsSidebarCollapsed}
-          />
-        </div>
-
-        {/* Main Right Window (Chat / Invite / Create Group / Group Info / Empty State) */}
-        <div
-          className={`flex-1 h-full flex flex-col min-w-0 bg-white/40 backdrop-blur-xl transition-all duration-300 ease-in-out transform-gpu ${
-            isRightWindowActive ? 'flex w-full' : 'hidden md:flex'
-          }`}
-        >
-          {isInviteOpen ? (
-            <InvitePanel />
-          ) : isCreatingGroup ? (
-            <CreateGroupPanel />
-          ) : showGroupInfo ? (
-            <GroupInfoPanel onClose={() => setIsGroupInfoOpen(false)} />
-          ) : !hasActiveChat ? (
-            <NoChatSelected onOpenSidebar={() => setIsSidebarCollapsed(false)} />
-          ) : (
-            <ChatContainer
-              isSidebarCollapsed={isSidebarCollapsed}
-              setIsSidebarCollapsed={setIsSidebarCollapsed}
+      {/* Edge-to-Edge Mobile, Floating Rounded Desktop Workspace */}
+      <div className="h-screen w-screen relative z-10 flex flex-col p-0 md:p-4 lg:p-5 overflow-hidden box-border transform-gpu">
+        <div className="relative w-full h-full flex overflow-hidden rounded-none md:rounded-[2rem] lg:rounded-[2.25rem] border-0 md:border md:border-white/70 shadow-none md:shadow-[0_20px_60px_-15px_rgba(14,165,233,0.25)] bg-white/40 backdrop-blur-2xl ring-0 md:ring-1 md:ring-sky-500/20 transform-gpu">
+          {/* Sidebar container */}
+          <div
+            className={`h-full flex-shrink-0 relative z-30 rounded-none md:rounded-l-[2rem] md:rounded-r-none overflow-hidden transform-gpu ${
+              isRightWindowActive ? 'hidden md:flex' : 'flex w-full md:w-auto'
+            }`}
+          >
+            <Sidebar
+              isCollapsed={isSidebarCollapsed}
+              setIsCollapsed={setIsSidebarCollapsed}
             />
-          )}
+          </div>
+
+          {/* Main Right Window (Chat / Invite / Create Group / Group Info / Empty State) */}
+          <div
+            className={`flex-1 h-full flex flex-col min-w-0 bg-white/40 backdrop-blur-xl rounded-none md:rounded-r-[2rem] md:rounded-l-none overflow-hidden transition-all duration-300 ease-in-out transform-gpu ${
+              isRightWindowActive ? 'flex w-full' : 'hidden md:flex'
+            }`}
+          >
+            {isInviteOpen ? (
+              <InvitePanel />
+            ) : isCreatingGroup ? (
+              <CreateGroupPanel />
+            ) : showGroupInfo ? (
+              <GroupInfoPanel onClose={() => setIsGroupInfoOpen(false)} />
+            ) : !hasActiveChat ? (
+              <NoChatSelected onOpenSidebar={() => setIsSidebarCollapsed(false)} />
+            ) : (
+              <ChatContainer
+                isSidebarCollapsed={isSidebarCollapsed}
+                setIsSidebarCollapsed={setIsSidebarCollapsed}
+              />
+            )}
+          </div>
         </div>
       </div>
     </>

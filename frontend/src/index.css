@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --rounded-box: 1.5rem;
+    --rounded-btn: 1rem;
+    --rounded-badge: 9999px;
+  }
+
   button,
   [role="button"],
   input[type="submit"],
@@ -8,6 +14,10 @@
   input[type="button"],
   a {
     cursor: pointer;
+  }
+
+  input, textarea, select {
+    border-radius: 1rem;
   }
 }
 
@@ -18,6 +28,27 @@ input[type="submit"],
 input[type="reset"],
 input[type="button"] {
   cursor: pointer !important;
+}
+
+/* Global ultra-smooth rounded scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.7);
 }
 
 .gradient-bg-fixed {
@@ -34,4 +65,5 @@ input[type="button"] {
   z-index: -1;
   transform: translateZ(0);
 }
+
 

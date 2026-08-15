@@ -244,7 +244,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   return (
     <aside
-      className={`h-full w-full relative border-r border-sky-200/60 flex flex-col bg-white/90 backdrop-blur-xl select-none overflow-hidden ${
+      className={`h-full w-full relative border-r border-sky-200/60 flex flex-col bg-white/90 backdrop-blur-xl select-none overflow-hidden rounded-none md:rounded-l-[2rem] md:rounded-r-none ${
         isDragging ? "transition-none" : "transition-all duration-300"
       }`}
       style={{

@@ -51,7 +51,7 @@ const MiniSidebarRail = memo(({
   }, [setShowProfileDropdown]);
 
   return (
-    <aside className="h-full hidden md:flex w-16 sm:w-20 relative transition-all duration-300 flex-col items-center py-3.5 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none overflow-hidden">
+    <aside className="h-full hidden md:flex w-16 sm:w-20 relative transition-all duration-300 flex-col items-center py-3.5 bg-white/90 backdrop-blur-xl border-r border-sky-200/60 select-none overflow-hidden rounded-none md:rounded-l-[2rem] md:rounded-r-none">
       {/* Top Header: App Logo */}
       <div className="flex flex-col items-center gap-2 mb-3">
         <Tooltip label="Expand Sidebar" position="right">
