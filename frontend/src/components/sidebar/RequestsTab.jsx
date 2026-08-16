@@ -37,13 +37,13 @@ const RequestsTab = memo(({
           {pendingRequests.map((req) => (
             <div
               key={req._id}
-              className={`p-3 transition-all flex items-center justify-between gap-2 ${
+              className={`p-3 transition-all flex flex-col gap-2.5 ${
                 isNeubrutalism
                   ? 'bg-white border-3 border-black shadow-[4px_4px_0_#000] rounded-none text-black'
                   : 'bg-white/80 border border-sky-100 rounded-2xl shadow-2xs hover:shadow-xs'
               }`}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 w-full">
                 <img
                   src={req.sender?.profilePic || "/avatar.png"}
                   alt={req.sender?.fullName}
@@ -56,7 +56,7 @@ const RequestsTab = memo(({
                     e.target.src = "/avatar.png";
                   }}
                 />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className={`text-xs truncate ${isNeubrutalism ? 'font-black text-black' : 'font-semibold text-gray-900'}`}>{req.sender?.fullName}</p>
                   <p className={`text-[11px] truncate ${isNeubrutalism ? 'font-extrabold text-black/70' : 'font-medium text-blue-600'}`}>
                     @{req.sender?.username || req.sender?.email?.split("@")[0]}
@@ -64,13 +64,15 @@ const RequestsTab = memo(({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 flex-shrink-0">
+              <div className={`flex items-center gap-2 w-full pt-2 ${
+                isNeubrutalism ? 'border-t-2 border-black' : 'border-t border-sky-100/70'
+              }`}>
                 <button
                   onClick={() => acceptFriendRequest(req._id)}
-                  className={`px-2.5 py-1.5 text-xs font-black uppercase flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
                     isNeubrutalism
                       ? 'bg-[#00E676] text-black border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-xs hover:scale-105 font-semibold'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-xs hover:scale-[1.02] font-semibold'
                   }`}
                 >
                   <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -78,7 +80,7 @@ const RequestsTab = memo(({
                 </button>
                 <button
                   onClick={() => declineFriendRequest(req._id)}
-                  className={`px-2.5 py-1.5 text-xs font-black uppercase flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
                     isNeubrutalism
                       ? 'bg-[#FF007A] text-white border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold'

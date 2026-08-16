@@ -1,13 +1,12 @@
 import React, { memo } from "react";
-import { MessageSquare, Users, Sparkles, UserCheck, Plus } from "lucide-react";
+import { MessageSquare, Users, Compass, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useThemeStore } from "../../store/useThemeStore";
 
 const TABS = [
   { id: "chats", label: "Chats", icon: MessageSquare },
   { id: "groups", label: "Groups", icon: Users },
-  { id: "find", label: "Find", icon: Sparkles },
-  { id: "requests", label: "Requests", icon: UserCheck },
+  { id: "discover", label: "Discover", icon: Compass },
 ];
 
 const SidebarNavTabs = memo(({ activeTab, setActiveTab, pendingRequestsCount = 0, onCreateGroup }) => {
@@ -29,7 +28,7 @@ const SidebarNavTabs = memo(({ activeTab, setActiveTab, pendingRequestsCount = 0
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-          const isRequestsTab = tab.id === "requests";
+          const isDiscoverTab = tab.id === "discover";
 
           return (
             <button
@@ -58,7 +57,7 @@ const SidebarNavTabs = memo(({ activeTab, setActiveTab, pendingRequestsCount = 0
               <span className="truncate">{tab.label}</span>
 
               {/* Pending Badge */}
-              {isRequestsTab && pendingRequestsCount > 0 && (
+              {isDiscoverTab && pendingRequestsCount > 0 && (
                 <span className={`px-1.5 py-0.5 text-[10px] font-bold transition-all ${
                   isNeubrutalism
                     ? "bg-[#FF007A] text-white border border-black font-black rounded-none"

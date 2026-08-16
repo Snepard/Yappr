@@ -12,7 +12,6 @@ import SidebarSearch from "./sidebar/SidebarSearch";
 import SidebarUserItem from "./sidebar/SidebarUserItem";
 import SidebarGroupItem from "./sidebar/SidebarGroupItem";
 import FindFriendsTab from "./sidebar/FindFriendsTab";
-import RequestsTab from "./sidebar/RequestsTab";
 import MiniSidebarRail from "./sidebar/MiniSidebarRail";
 
 const MIN_SIDEBAR_WIDTH = 320;
@@ -47,7 +46,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     unsubscribeFromFriendEvents,
   } = useFriendStore();
 
-  const [activeTab, setActiveTab] = useState("chats"); // "chats" | "groups" | "find" | "requests"
+  const [activeTab, setActiveTab] = useState("chats"); // "chats" | "groups" | "discover"
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
@@ -151,10 +150,10 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     unsubscribeFromGroupEvents,
   ]);
 
-  // Search debouncer for "find" tab
+  // Search debouncer for "discover" tab
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (activeTab === "find" && friendSearchQuery.trim()) {
+      if (activeTab === "discover" && friendSearchQuery.trim()) {
         searchUsers(friendSearchQuery);
       }
     }, 300);
@@ -346,7 +345,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           </div>
         )}
 
-        {activeTab === "find" && (
+        {activeTab === "discover" && (
           <FindFriendsTab
             friendSearchQuery={friendSearchQuery}
             setFriendSearchQuery={setFriendSearchQuery}
@@ -356,11 +355,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             isSearching={isSearching}
             sendFriendRequest={sendFriendRequest}
             onOpenInvite={() => setIsInviteOpen(true)}
-          />
-        )}
-
-        {activeTab === "requests" && (
-          <RequestsTab
             pendingRequests={pendingRequests}
             isRequestsLoading={isRequestsLoading}
             acceptFriendRequest={acceptFriendRequest}

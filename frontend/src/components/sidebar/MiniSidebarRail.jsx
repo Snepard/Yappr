@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Sparkles,
   UserCheck,
+  Compass,
   Plus,
   Check,
   X,
@@ -188,37 +189,20 @@ const MiniSidebarRail = memo(({
           </button>
         </Tooltip>
 
-        <Tooltip label="Find Friends" position="right">
+        <Tooltip label="Discover & Add Friends" position="right">
           <button
-            onClick={() => setActiveTab("find")}
-            className={`p-2 transition-all cursor-pointer ${
-              isNeubrutalism
-                ? activeTab === "find"
-                  ? "bg-[#FFE600] text-black border border-black shadow-[1px_1px_0_#000] font-black rounded-none"
-                  : "text-black hover:bg-yellow-100 rounded-none"
-                : activeTab === "find"
-                  ? "bg-white text-blue-600 shadow-xs scale-105 rounded-xl"
-                  : "text-gray-500 hover:text-gray-800 hover:bg-white/50 rounded-xl"
-            }`}
-          >
-            <Sparkles className="w-4 h-4" />
-          </button>
-        </Tooltip>
-
-        <Tooltip label="Friend Requests" position="right">
-          <button
-            onClick={() => setActiveTab("requests")}
+            onClick={() => setActiveTab("discover")}
             className={`p-2 relative transition-all cursor-pointer ${
               isNeubrutalism
-                ? activeTab === "requests"
+                ? activeTab === "discover"
                   ? "bg-[#FFE600] text-black border border-black shadow-[1px_1px_0_#000] font-black rounded-none"
                   : "text-black hover:bg-yellow-100 rounded-none"
-                : activeTab === "requests"
+                : activeTab === "discover"
                   ? "bg-white text-blue-600 shadow-xs scale-105 rounded-xl"
                   : "text-gray-500 hover:text-gray-800 hover:bg-white/50 rounded-xl"
             }`}
           >
-            <UserCheck className="w-4 h-4" />
+            <Compass className="w-4 h-4" />
             {pendingRequests.length > 0 && (
               <span className={`absolute -top-1 -right-1 w-4 h-4 text-[10px] text-white font-black flex items-center justify-center ${
                 isNeubrutalism
@@ -320,8 +304,8 @@ const MiniSidebarRail = memo(({
           </>
         )}
 
-        {/* FIND TAB RAIL */}
-        {activeTab === "find" && (
+        {/* DISCOVER TAB RAIL */}
+        {activeTab === "discover" && (
           <>
             <Tooltip label="Invite Friends Link" position="right">
               <button
@@ -336,6 +320,44 @@ const MiniSidebarRail = memo(({
               </button>
             </Tooltip>
 
+            {/* Pending Requests List */}
+            {pendingRequests.map((req) => (
+              <div key={req._id} className="relative flex flex-col items-center gap-1 my-1">
+                <Tooltip label={`Request from ${req.sender?.fullName}`} position="right">
+                  <div className={`w-10 h-10 overflow-hidden ${
+                    isNeubrutalism ? 'border-2 border-black rounded-none shadow-[2px_2px_0_#000]' : 'rounded-full border-2 border-amber-400'
+                  }`}>
+                    <img
+                      src={req.sender?.profilePic || "/avatar.png"}
+                      alt={req.sender?.fullName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </Tooltip>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => acceptFriendRequest(req._id)}
+                    className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
+                      isNeubrutalism ? 'bg-[#00E676] text-black border border-black rounded-none font-bold' : 'rounded-full bg-emerald-500 text-white'
+                    }`}
+                    title="Accept"
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </button>
+                  <button
+                    onClick={() => declineFriendRequest(req._id)}
+                    className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
+                      isNeubrutalism ? 'bg-black text-white border border-black rounded-none font-bold' : 'rounded-full bg-gray-400 text-white'
+                    }`}
+                    title="Decline"
+                  >
+                    <X className="w-3 h-3 stroke-[3]" />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Recommended Users List */}
             {recommendedUsers.map((user) => (
               <Tooltip key={user._id} label={`Add ${user.fullName}`} position="right">
                 <button
@@ -361,44 +383,6 @@ const MiniSidebarRail = memo(({
             ))}
           </>
         )}
-
-        {/* REQUESTS TAB RAIL */}
-        {activeTab === "requests" &&
-          pendingRequests.map((req) => (
-            <div key={req._id} className="relative flex flex-col items-center gap-1 my-1">
-              <Tooltip label={`Request from ${req.sender?.fullName}`} position="right">
-                <div className={`w-10 h-10 overflow-hidden ${
-                  isNeubrutalism ? 'border-2 border-black rounded-none shadow-[2px_2px_0_#000]' : 'rounded-full border-2 border-amber-400'
-                }`}>
-                  <img
-                    src={req.sender?.profilePic || "/avatar.png"}
-                    alt={req.sender?.fullName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Tooltip>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => acceptFriendRequest(req._id)}
-                  className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
-                    isNeubrutalism ? 'bg-[#00E676] text-black border border-black rounded-none font-bold' : 'rounded-full bg-emerald-500 text-white'
-                  }`}
-                  title="Accept"
-                >
-                  <Check className="w-3 h-3 stroke-[3]" />
-                </button>
-                <button
-                  onClick={() => declineFriendRequest(req._id)}
-                  className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
-                    isNeubrutalism ? 'bg-black text-white border border-black rounded-none font-bold' : 'rounded-full bg-gray-400 text-white'
-                  }`}
-                  title="Decline"
-                >
-                  <X className="w-3 h-3 stroke-[3]" />
-                </button>
-              </div>
-            </div>
-          ))}
       </div>
     </aside>
   );

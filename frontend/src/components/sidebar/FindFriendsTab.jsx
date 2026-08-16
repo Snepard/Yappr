@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Search, UserPlus, Check, Clock, Sparkles, Share2 } from "lucide-react";
+import { Search, UserPlus, Check, Clock, Sparkles, Share2, UserCheck, X } from "lucide-react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 import { useThemeStore } from "../../store/useThemeStore";
 
@@ -12,6 +12,10 @@ const FindFriendsTab = memo(({
   isSearching,
   sendFriendRequest,
   onOpenInvite,
+  pendingRequests = [],
+  isRequestsLoading = false,
+  acceptFriendRequest,
+  declineFriendRequest,
 }) => {
   const theme = useThemeStore((state) => state.theme);
   const isNeubrutalism = theme === "neubrutalism";
@@ -44,6 +48,83 @@ const FindFriendsTab = memo(({
           <span>Invite</span>
         </button>
       </div>
+
+      {/* Pending Friend Requests Section */}
+      {pendingRequests && pendingRequests.length > 0 && (
+        <div className="space-y-2">
+          <div className={`flex items-center gap-1.5 px-1 text-xs uppercase tracking-wider ${
+            isNeubrutalism ? 'text-black font-black' : 'font-semibold text-gray-500'
+          }`}>
+            <UserCheck className={`w-3.5 h-3.5 ${isNeubrutalism ? 'text-black' : 'text-blue-500'}`} />
+            <span>Pending Requests ({pendingRequests.length})</span>
+          </div>
+
+          {isRequestsLoading ? (
+            <SidebarSkeleton />
+          ) : (
+            <div className="space-y-2">
+              {pendingRequests.map((req) => (
+                <div
+                  key={req._id}
+                  className={`p-3 transition-all flex flex-col gap-2.5 ${
+                    isNeubrutalism
+                      ? 'bg-white border-3 border-black shadow-[4px_4px_0_#000] rounded-none text-black'
+                      : 'bg-white/80 border border-sky-100 rounded-2xl shadow-2xs hover:shadow-xs'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 w-full">
+                    <img
+                      src={req.sender?.profilePic || "/avatar.png"}
+                      alt={req.sender?.fullName}
+                      className={`w-10 h-10 object-cover flex-shrink-0 ${
+                        isNeubrutalism
+                          ? 'border-2 border-black rounded-none shadow-[2px_2px_0_#000]'
+                          : 'rounded-full ring-2 ring-blue-100'
+                      }`}
+                      onError={(e) => {
+                        e.target.src = "/avatar.png";
+                      }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-xs truncate ${isNeubrutalism ? 'font-black text-black' : 'font-semibold text-gray-900'}`}>{req.sender?.fullName}</p>
+                      <p className={`text-[11px] truncate ${isNeubrutalism ? 'font-extrabold text-black/70' : 'font-medium text-blue-600'}`}>
+                        @{req.sender?.username || req.sender?.email?.split("@")[0]}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-center gap-2 w-full pt-2 ${
+                    isNeubrutalism ? 'border-t-2 border-black' : 'border-t border-sky-100/70'
+                  }`}>
+                    <button
+                      onClick={() => acceptFriendRequest(req._id)}
+                      className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        isNeubrutalism
+                          ? 'bg-[#00E676] text-black border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
+                          : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-xs hover:scale-[1.02] font-semibold'
+                      }`}
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Accept</span>
+                    </button>
+                    <button
+                      onClick={() => declineFriendRequest(req._id)}
+                      className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        isNeubrutalism
+                          ? 'bg-[#FF007A] text-white border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold'
+                      }`}
+                    >
+                      <X className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="relative">
