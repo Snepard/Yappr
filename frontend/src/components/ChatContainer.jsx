@@ -14,10 +14,13 @@ import MessageSkeleton from "./skeletons/MessageSkeleton";
 import ForwardModal from "./ForwardModal";
 import ChatMessageItem from "./ChatMessageItem";
 import { useAuthStore } from "../store/useAuthStore";
+import { useThemeStore } from "../store/useThemeStore";
 import { confirmDelete } from "../lib/confirmToast";
 import { useDeleteAnimationStore } from "../store/useDeleteAnimationStore";
 
 const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
+  const theme = useThemeStore((state) => state.theme);
+  const isNeubrutalism = theme === "neubrutalism";
   const {
     messages,
     getMessages,
@@ -199,7 +202,11 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gradient-to-br from-slate-50/50 via-blue-50/40 to-sky-50/50 relative">
+    <div className={`flex-1 flex flex-col h-full relative transition-all ${
+      isNeubrutalism
+        ? "bg-[#FFFDF0] text-black"
+        : "bg-gradient-to-br from-slate-50/50 via-blue-50/40 to-sky-50/50"
+    }`}>
       <ChatHeader
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -215,19 +222,31 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto p-4 sm:p-6 bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
+          className={`h-full overflow-y-auto p-4 sm:p-6 transition-all ${
+            isNeubrutalism
+              ? "bg-[#FFFDF0]"
+              : "bg-gradient-to-br from-sky-50/20 via-blue-50/30 to-slate-50/20"
+          }`}
         >
           <div ref={scrollContentRef} className="space-y-4 flex flex-col justify-end min-h-full">
             {!currentMessages || currentMessages.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-gray-600 h-full px-4 min-h-[300px]">
-                <div className="text-center bg-white/70 backdrop-blur-xl rounded-2xl p-6 lg:p-8 shadow-xs border border-sky-100 max-w-sm lg:max-w-md w-full">
-                  <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-br from-blue-100 to-sky-100 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex-1 flex items-center justify-center h-full px-4 min-h-[300px]">
+                <div className={`text-center p-6 lg:p-8 max-w-sm lg:max-w-md w-full transition-all ${
+                  isNeubrutalism
+                    ? "bg-white border-4 border-black shadow-[6px_6px_0_#000] rounded-none text-black font-bold"
+                    : "bg-white/70 backdrop-blur-xl rounded-2xl shadow-xs border border-sky-100 text-gray-600"
+                }`}>
+                  <div className={`w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 flex items-center justify-center ${
+                    isNeubrutalism
+                      ? "bg-[#FFE600] border-2 border-black shadow-[2px_2px_0_#000] rounded-none text-black"
+                      : "bg-gradient-to-br from-blue-100 to-sky-100 rounded-full text-blue-600"
+                  }`}>
+                    <svg className="w-6 h-6 lg:w-8 lg:h-8 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <p className="text-lg font-bold mb-1 text-gray-800">No messages yet</p>
-                  <p className="text-xs text-gray-500">
+                  <p className={isNeubrutalism ? "text-lg font-black mb-1 text-black uppercase" : "text-lg font-bold mb-1 text-gray-800"}>No messages yet</p>
+                  <p className={isNeubrutalism ? "text-xs font-bold text-black/80" : "text-xs text-gray-500"}>
                     {isGroupMode
                       ? `Send a message to start chatting in ${selectedGroup?.name}!`
                       : `Send a message to start chatting with ${selectedUser?.fullName}!`}
@@ -288,7 +307,11 @@ const ChatContainer = ({ isSidebarCollapsed, setIsSidebarCollapsed }) => {
               exit={{ opacity: 0, y: 12, scale: 0.85 }}
               transition={{ duration: 0.2 }}
               onClick={() => scrollToBottom("smooth")}
-              className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 p-2.5 bg-white/90 backdrop-blur-xl border border-sky-200 text-blue-600 rounded-full shadow-lg shadow-blue-500/10 hover:bg-blue-50 hover:scale-110 active:scale-95 transition-all cursor-pointer group flex items-center justify-center"
+              className={`absolute bottom-5 left-1/2 -translate-x-1/2 z-30 p-2.5 transition-all cursor-pointer group flex items-center justify-center ${
+                isNeubrutalism
+                  ? "bg-[#FFE600] text-black border-2 border-black shadow-[3px_3px_0_#000] rounded-none font-bold hover:bg-yellow-200"
+                  : "bg-white/90 backdrop-blur-xl border border-sky-200 text-blue-600 rounded-full shadow-lg shadow-blue-500/10 hover:bg-blue-50 hover:scale-110 active:scale-95"
+              }`}
               title="Scroll to bottom"
             >
               <ChevronDown className="w-5 h-5 group-hover:translate-y-0.5 transition-transform stroke-[2.5]" />

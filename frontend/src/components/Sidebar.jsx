@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useFriendStore } from "../store/useFriendStore";
 import { useGroupStore } from "../store/useGroupStore";
+import { useThemeStore } from "../store/useThemeStore";
 import { confirmLogout } from "../lib/confirmToast";
 
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
@@ -17,6 +18,8 @@ import MiniSidebarRail from "./sidebar/MiniSidebarRail";
 const MIN_SIDEBAR_WIDTH = 320;
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+  const theme = useThemeStore((state) => state.theme);
+  const isNeubrutalism = theme === "neubrutalism";
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, setIsInviteOpen } = useChatStore();
   const { onlineUsers, authUser, logout } = useAuthStore();
   const {
@@ -243,7 +246,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
 
   return (
     <aside
-      className={`h-full w-full relative border-r border-sky-200/60 flex flex-col bg-white/90 backdrop-blur-xl select-none overflow-hidden rounded-none md:rounded-l-[2rem] md:rounded-r-none ${
+      className={`h-full w-full relative flex flex-col select-none overflow-hidden ${
+        isNeubrutalism
+          ? "bg-[#FFFDF0] border-r-3 border-black text-black rounded-none"
+          : "border-r border-sky-200/60 bg-white/90 backdrop-blur-xl rounded-none md:rounded-l-[2rem] md:rounded-r-none"
+      } ${
         isDragging ? "transition-none" : "transition-all duration-300"
       }`}
       style={{
@@ -264,10 +271,14 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         aria-valuemax={maxAllowedWidth}
       >
         <div
-          className={`w-1 h-12 rounded-full transition-all duration-150 ${
-            isDragging
-              ? "bg-blue-500 shadow-md shadow-blue-500/50 scale-y-125 opacity-100"
-              : "bg-sky-300/60 group-hover:bg-blue-500 group-hover:scale-y-110 opacity-0 group-hover:opacity-100"
+          className={`w-1 h-12 transition-all duration-150 ${
+            isNeubrutalism
+              ? isDragging
+                ? "bg-black shadow-[2px_2px_0_#000] scale-y-125 opacity-100 rounded-none"
+                : "bg-black/60 group-hover:bg-black group-hover:scale-y-110 opacity-0 group-hover:opacity-100 rounded-none"
+              : isDragging
+                ? "bg-blue-500 shadow-md shadow-blue-500/50 scale-y-125 opacity-100 rounded-full"
+                : "bg-sky-300/60 group-hover:bg-blue-500 group-hover:scale-y-110 opacity-0 group-hover:opacity-100 rounded-full"
           }`}
         />
       </div>
