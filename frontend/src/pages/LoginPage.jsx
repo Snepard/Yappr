@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
+import { useThemeStore } from '../store/useThemeStore';
 import toast from 'react-hot-toast';
 
 const SigninPage = () => {
@@ -14,6 +15,9 @@ const SigninPage = () => {
   
   const [focused, setFocused] = useState('');
   const { login, isLoggingIn } = useAuthStore();
+  const theme = useThemeStore((state) => state.theme);
+  const isNeubrutalism = theme === "neubrutalism";
+  const navigate = useNavigate();
 
   useEffect(() => {
     const isRemembered = localStorage.getItem('rememberMe') === 'true';
@@ -59,12 +63,13 @@ const SigninPage = () => {
         localStorage.removeItem('rememberMe');
         localStorage.removeItem('rememberedEmail');
       }
+
       login(formData);
     }
   };
 
-  const handleFocus = (fieldName) => {
-    setFocused(fieldName);
+  const handleFocus = (field) => {
+    setFocused(field);
   };
 
   const handleBlur = () => {
@@ -75,52 +80,60 @@ const SigninPage = () => {
     setShowPassword(!showPassword);
   };
 
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen relative overflow-hidden transform-gpu">
-      {/* Video Background Container */}
-      <div className="absolute inset-0 w-full h-full transform-gpu">
-        <video 
-          className="w-full h-full object-cover transform-gpu"
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          preload="auto"
-        >
-          <source src="\authBG.mp4" type="video/mp4" />
-          {/* Fallback gradient for browsers that don't support video */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
-        </video>
-        
-        {/* Dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
-      </div>
+    <div className={`min-h-screen relative overflow-hidden flex flex-col justify-between ${
+      isNeubrutalism ? 'bg-[#FFFDF0] text-black' : 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white'
+    }`}>
+      {/* Background Grid */}
+      {isNeubrutalism ? (
+        <div 
+          className="absolute inset-0 z-0 opacity-40 pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(to right, #000 1px, #FFFDF0 1px)`,
+            backgroundSize: `32px 32px`
+          }}
+        />
+      ) : (
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/40 to-slate-950" />
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8">
         <div className="w-full max-w-md">
-          {/* Form Container with Enhanced Blur for Dark Background */}
-          <div className="backdrop-blur-sm bg-gradient-to-br from-black/40 to-black/20 rounded-3xl shadow-2xl border border-white/20 p-10 transition-all duration-500">
-            {/* Header inside container */}
-            <div className="text-center mb-10">
+          {/* Form Container */}
+          <div className={`transition-all duration-200 ${
+            isNeubrutalism
+              ? 'bg-white border-4 border-black p-8 sm:p-10 shadow-[8px_8px_0_#000] rounded-none text-black'
+              : 'backdrop-blur-sm bg-gradient-to-br from-black/40 to-black/20 rounded-3xl shadow-2xl border border-white/20 p-10'
+          }`}>
+            {/* Header */}
+            <div className="text-center mb-8 sm:mb-10">
               <div className="mb-4">
-                <h1 className="text-4xl font-bold text-white mb-3 tracking-wide">
+                <h1 className={`text-3xl sm:text-4xl font-black mb-2 ${
+                  isNeubrutalism ? 'text-black uppercase tracking-tight' : 'text-white tracking-wide'
+                }`}>
                   WELCOME BACK
                 </h1>
-                <div className="w-32 h-1 bg-gradient-to-r from-slate-400 to-slate-600 mx-auto rounded-full" />
+                <div className={`w-32 h-1.5 mx-auto ${
+                  isNeubrutalism ? 'bg-black' : 'bg-gradient-to-r from-slate-400 to-slate-600 rounded-full'
+                }`} />
               </div>
-              <p className="text-blue-100 text-xl font-light tracking-wide">
+              <p className={`text-sm sm:text-base font-bold ${
+                isNeubrutalism ? 'text-black' : 'text-blue-100 font-light'
+              }`}>
                 Jump back to your convos!!
               </p>
             </div>
 
-            <div className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               {/* Email */}
               <div className="relative">
-                <label className="flex items-center text-white text-sm font-semibold mb-3 tracking-wide">
-                  <Mail className="mr-2 text-blue-400" size={16} />
+                <label className={`flex items-center text-sm font-black mb-2 tracking-wide ${
+                  isNeubrutalism ? 'text-black uppercase' : 'text-white'
+                }`}>
+                  <Mail className={`mr-2 ${isNeubrutalism ? 'text-black' : 'text-blue-400'}`} size={16} />
                   EMAIL OR USERNAME
                 </label>
                 <input
@@ -130,18 +143,21 @@ const SigninPage = () => {
                   onChange={handleInputChange}
                   onFocus={() => handleFocus('email')}
                   onBlur={handleBlur}
-                  className="w-full px-6 py-4 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
+                  className={`w-full px-5 py-3.5 text-sm transition-all duration-150 ${
+                    isNeubrutalism
+                      ? 'bg-white text-black border-3 border-black shadow-[3px_3px_0_#000] focus:shadow-[5px_5px_0_#000] focus:outline-none rounded-none font-bold placeholder:text-gray-500'
+                      : 'bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                  }`}
                   placeholder="aryan@example.com or aryan"
                 />
-                {focused === 'email' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/5 to-cyan-400/5 pointer-events-none" />
-                )}
               </div>
 
               {/* Password */}
               <div className="relative">
-                <label className="flex items-center text-white text-sm font-semibold mb-3 tracking-wide">
-                  <Lock className="mr-2 text-blue-400" size={16} />
+                <label className={`flex items-center text-sm font-black mb-2 tracking-wide ${
+                  isNeubrutalism ? 'text-black uppercase' : 'text-white'
+                }`}>
+                  <Lock className={`mr-2 ${isNeubrutalism ? 'text-black' : 'text-blue-400'}`} size={16} />
                   PASSWORD
                 </label>
                 <div className="relative">
@@ -152,52 +168,55 @@ const SigninPage = () => {
                     onChange={handleInputChange}
                     onFocus={() => handleFocus('password')}
                     onBlur={handleBlur}
-                    className="w-full px-6 py-4 pr-14 bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400/50 transition-all duration-300 hover:bg-black/30 hover:border-white/30"
+                    className={`w-full px-5 py-3.5 pr-14 text-sm transition-all duration-150 ${
+                      isNeubrutalism
+                        ? 'bg-white text-black border-3 border-black shadow-[3px_3px_0_#000] focus:shadow-[5px_5px_0_#000] focus:outline-none rounded-none font-bold placeholder:text-gray-500'
+                        : 'bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                    }`}
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors duration-300 focus:outline-none focus:text-blue-400 cursor-pointer"
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer ${
+                      isNeubrutalism ? 'text-black' : 'text-white/60 hover:text-white'
+                    }`}
                   >
-                    {showPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                {focused === 'password' && (
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400/10 to-cyan-400/10 pointer-events-none" />
-                )}
               </div>
 
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center space-x-2.5 text-white/90 text-sm font-semibold cursor-pointer select-none group">
-                  <div className="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-5 h-5 bg-black/30 border-2 border-white/30 rounded-md peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all duration-200 flex items-center justify-center group-hover:border-white/50">
-                      {rememberMe && (
-                        <svg className="w-3.5 h-3.5 text-white stroke-current" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      )}
-                    </div>
+                <label className="flex items-center space-x-2.5 text-sm font-bold cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className={`w-5 h-5 flex items-center justify-center transition-all ${
+                    isNeubrutalism
+                      ? 'border-2 border-black bg-white peer-checked:bg-[#FFE600] rounded-none shadow-[1px_1px_0_#000]'
+                      : 'bg-black/30 border-2 border-white/30 rounded-md peer-checked:bg-blue-500'
+                  }`}>
+                    {rememberMe && (
+                      <svg className={`w-3.5 h-3.5 stroke-current ${isNeubrutalism ? 'text-black' : 'text-white'}`} viewBox="0 0 24 24" fill="none" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
                   </div>
-                  <span className="text-white/80 group-hover:text-white transition-colors duration-200">
+                  <span className={isNeubrutalism ? 'text-black font-extrabold' : 'text-white/80'}>
                     Remember me
                   </span>
                 </label>
                 <button 
                   type="button"
                   onClick={() => navigate('/forgot-password')}
-                  className="text-blue-400 hover:text-blue-300 text-sm font-semibold transition-colors duration-300 hover:underline decoration-2 underline-offset-4 cursor-pointer">
+                  className={`text-sm font-extrabold cursor-pointer hover:underline ${
+                    isNeubrutalism ? 'text-black hover:text-[#FF007A]' : 'text-blue-400 hover:text-blue-300'
+                  }`}>
                   Forgot Password?
                 </button>
               </div>
@@ -205,30 +224,25 @@ const SigninPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                onClick={handleSubmit}
-                className="w-full py-4 bg-gradient-to-r from-slate-700 to-slate-900 text-white font-bold text-lg rounded-xl shadow-2xl hover:from-slate-600 hover:to-slate-800 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-slate-400/50 active:scale-95 relative overflow-hidden group cursor-pointer"
                 disabled={isLoggingIn}
+                className={`w-full py-4 text-base font-black tracking-wide transition-all cursor-pointer disabled:opacity-50 ${
+                  isNeubrutalism
+                    ? 'bg-[#FFE600] text-black uppercase border-3 border-black shadow-[4px_4px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-[1px_1px_0_#000] rounded-none'
+                    : 'bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-xl shadow-2xl hover:from-slate-600 hover:to-slate-800 transform hover:scale-105'
+                }`}
               > 
-                {isLoggingIn ? (
-                  <span className="relative z-10 tracking-wide">Signing In...</span>
-                ) : (
-                  <span className="relative z-10 tracking-wide">START YAPPIN'</span>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-500 to-slate-700 opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
-                <div className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                {isLoggingIn ? "Signing In..." : "START YAPPIN'"}
               </button>
-            </div>
 
-            {/* Sign Up Option */}
-            <div className="mt-8 text-center">
-              <p className="text-white/80 text-lg">
-                New to yappr?{' '}
-                <button className="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300 hover:underline decoration-2 underline-offset-4 cursor-pointer"
-                  onClick={() => {navigate('/signup')}}>
-                  Create Account
-                </button>
-              </p>
-            </div>
+              <div className="text-center pt-2">
+                <p className={`text-xs sm:text-sm font-bold ${isNeubrutalism ? 'text-black' : 'text-blue-200/80'}`}>
+                  Don't have an account?{' '}
+                  <Link to="/signup" className={`font-black underline ${isNeubrutalism ? 'text-[#FF007A]' : 'text-cyan-300'}`}>
+                    Create Account
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
       </div>

@@ -66,4 +66,89 @@ input[type="button"] {
   transform: translateZ(0);
 }
 
+/* ==========================================================================
+   NEUBRUTALISM THEME DESIGN SYSTEM
+   ========================================================================== */
+html.theme-neubrutalism {
+  --bg-page: #FFFDF0;
+  --color-black: #000000;
+  --color-accent-yellow: #FFE600;
+  --color-accent-pink: #FF007A;
+  --color-accent-cyan: #00E5FF;
+  --color-accent-lime: #00E676;
+}
+
+html.theme-neubrutalism body {
+  background-color: #FFFDF0 !important;
+  color: #000000 !important;
+}
+
+html.theme-neubrutalism .gradient-bg-fixed {
+  background: #FFFDF0 !important;
+  background-image: linear-gradient(#e2e8f0 1.5px, transparent 1.5px), linear-gradient(to right, #e2e8f0 1.5px, #FFFDF0 1.5px) !important;
+  background-size: 28px 28px !important;
+}
+
+/* Neubrutalism scrollbars */
+html.theme-neubrutalism ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html.theme-neubrutalism ::-webkit-scrollbar-track {
+  background: #FFFDF0;
+  border-left: 3px solid #000;
+}
+html.theme-neubrutalism ::-webkit-scrollbar-thumb {
+  background: #FFE600;
+  border: 3px solid #000;
+  border-radius: 0;
+}
+html.theme-neubrutalism ::-webkit-scrollbar-thumb:hover {
+  background: #FF007A;
+}
+
+/* Neubrutalism Utility Classes */
+.brutal-card {
+  border: 3px solid #000000;
+  box-shadow: 5px 5px 0px #000000;
+  border-radius: 0px;
+}
+.brutal-card-lg {
+  border: 4px solid #000000;
+  box-shadow: 7px 7px 0px #000000;
+  border-radius: 0px;
+}
+.brutal-btn {
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  border-radius: 0px;
+  font-weight: 800;
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+}
+.brutal-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+.brutal-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000000;
+}
+.brutal-input {
+  border: 3px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000;
+  border-radius: 0px !important;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
+  font-weight: 600;
+}
+.brutal-input:focus {
+  outline: none !important;
+  box-shadow: 5px 5px 0px #000000 !important;
+  background-color: #FFFFFF !important;
+}
+.brutal-input::placeholder {
+  color: #666666 !important;
+}
+
+
 

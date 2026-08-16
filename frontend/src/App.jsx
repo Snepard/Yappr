@@ -12,6 +12,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from './store/useAuthStore';
+import { useThemeStore } from './store/useThemeStore';
 import { Toaster } from "react-hot-toast";
 import PageWrapper from './components/PageWrapper';
 import DeleteMessageAnimation from './components/DeleteMessageAnimation';
@@ -20,11 +21,13 @@ const App = () => {
   const authUser = useAuthStore((state) => state.authUser);
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth);
+  const initTheme = useThemeStore((state) => state.initTheme);
   const location = useLocation();
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    initTheme();
+  }, [checkAuth, initTheme]);
 
   if (isCheckingAuth && !authUser) {
     return (
