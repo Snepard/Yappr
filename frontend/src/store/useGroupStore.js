@@ -344,7 +344,7 @@ export const useGroupStore = create((set, get) => ({
           selectedGroup: state.selectedGroup?._id === groupId ? null : state.selectedGroup,
           groupMessages: state.selectedGroup?._id === groupId ? [] : state.groupMessages,
         }));
-        toast("You were removed from the group", { icon: "ℹ️" });
+        toast("You were removed from the group");
       }
     });
 

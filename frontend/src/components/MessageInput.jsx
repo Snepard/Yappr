@@ -138,7 +138,7 @@ const MessageInput = () => {
                              ? "bg-amber-100/50 border-amber-300 text-amber-900 placeholder:text-amber-700/60 font-semibold cursor-not-allowed rounded-3xl"
                              : "bg-sky-50/60 border-sky-200/70 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 rounded-3xl"
                        }`}
-            placeholder={isTimedOut ? "🔒 You are currently timed out in this group (Read-only mode)" : "Message..."}
+            placeholder={isTimedOut ? "You are currently timed out in this group (Read-only mode)" : "Message..."}
             value={text}
             onChange={handleTextareaInput}
             onKeyPress={handleKeyPress}

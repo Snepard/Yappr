@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Camera, ArrowLeft, Home, KeyRound, Lock, Eye, EyeOff, Palette, Check, Sparkles } from 'lucide-react';
+import { User, Mail, Camera, ArrowLeft, Home, KeyRound, Lock, Eye, EyeOff, Palette, Check, Sparkles, Zap } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { Link } from "react-router-dom";
@@ -389,7 +389,7 @@ const ProfilePage = () => {
                   >
                     <div className="flex items-center justify-between w-full mb-1">
                       <span className={`text-xs uppercase tracking-wide flex items-center gap-1 ${isNeubrutalism ? 'font-black text-white' : 'font-bold'}`}>
-                        ⚡ Neubrutalism
+                        <Zap className={`w-3.5 h-3.5 ${isNeubrutalism ? 'text-yellow-300 fill-yellow-300' : 'text-amber-400 fill-amber-400'}`} /> Neubrutalism
                       </span>
                       {isNeubrutalism && <Check className="w-4 h-4 text-white font-bold" />}
                     </div>

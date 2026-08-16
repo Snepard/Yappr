@@ -100,7 +100,7 @@ export const useFriendStore = create((set, get) => ({
     socket.off("friendRequestAccepted");
 
     socket.on("newFriendRequest", () => {
-      toast("You received a new friend request!", { id: "new-friend-request", icon: "👋" });
+      toast("You received a new friend request!", { id: "new-friend-request" });
       get().getFriendRequests();
     });
 
