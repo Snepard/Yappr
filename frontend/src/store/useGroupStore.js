@@ -19,6 +19,7 @@ export const useGroupStore = create((set, get) => ({
     if (isCreating) {
       useChatStore.getState().setSelectedUser(null);
       useChatStore.getState().setIsInviteOpen(false);
+      useChatStore.getState().setIsRequestsOpen(false);
     }
     set({
       isCreatingGroup: isCreating,
@@ -30,6 +31,7 @@ export const useGroupStore = create((set, get) => ({
     if (isOpen) {
       useChatStore.getState().setSelectedUser(null);
       useChatStore.getState().setIsInviteOpen(false);
+      useChatStore.getState().setIsRequestsOpen(false);
       set({ isCreatingGroup: false });
     }
     set({ isGroupInfoOpen: isOpen });
@@ -255,6 +257,7 @@ export const useGroupStore = create((set, get) => ({
     if (group) {
       useChatStore.getState().setSelectedUser(null);
       useChatStore.getState().setIsInviteOpen(false);
+      useChatStore.getState().setIsRequestsOpen(false);
     }
 
     set({ selectedGroup: group, isCreatingGroup: false, isGroupInfoOpen: false, groupMessages: [] });

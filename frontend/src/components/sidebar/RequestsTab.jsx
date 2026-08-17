@@ -1,99 +1,79 @@
 import React, { memo } from "react";
-import { UserCheck, Check, X } from "lucide-react";
+import { UserCheck, ChevronRight, ArrowRight } from "lucide-react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 import { useThemeStore } from "../../store/useThemeStore";
+import { useChatStore } from "../../store/useChatStore";
 
 const RequestsTab = memo(({
-  pendingRequests,
-  isRequestsLoading,
-  acceptFriendRequest,
-  declineFriendRequest,
+  pendingRequests = [],
+  isRequestsLoading = false,
 }) => {
   const theme = useThemeStore((state) => state.theme);
   const isNeubrutalism = theme === "neubrutalism";
+  const setIsRequestsOpen = useChatStore((state) => state.setIsRequestsOpen);
+
+  if (isRequestsLoading) {
+    return <div className="p-3"><SidebarSkeleton /></div>;
+  }
+
+  if (!pendingRequests || pendingRequests.length === 0) {
+    return (
+      <div className={`p-4 text-center ${
+        isNeubrutalism
+          ? 'bg-white border-3 border-black border-dashed rounded-none text-black font-bold'
+          : 'bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 text-gray-500'
+      }`}>
+        <UserCheck className={`w-8 h-8 mx-auto mb-2 ${isNeubrutalism ? 'text-black' : 'text-gray-300'}`} />
+        <p className="text-xs font-medium">No pending friend requests</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-3 space-y-3">
-      <div className={`flex items-center gap-1.5 px-1 text-xs uppercase tracking-wider ${
-        isNeubrutalism ? 'text-black font-black' : 'font-semibold text-gray-500'
-      }`}>
-        <UserCheck className={`w-3.5 h-3.5 ${isNeubrutalism ? 'text-black' : 'text-blue-500'}`} />
-        <span>Pending Requests ({pendingRequests.length})</span>
-      </div>
-
-      {isRequestsLoading ? (
-        <SidebarSkeleton />
-      ) : pendingRequests.length === 0 ? (
-        <div className={`text-center py-8 px-4 ${
+    <div className="p-3">
+      <button
+        type="button"
+        onClick={() => setIsRequestsOpen(true)}
+        className={`w-full p-3 px-3.5 text-left transition-all cursor-pointer group flex items-center justify-between gap-3 ${
           isNeubrutalism
-            ? 'bg-white border-3 border-black border-dashed rounded-none text-black font-bold'
-            : 'bg-gray-50/50 rounded-2xl border border-dashed border-gray-200 text-gray-500'
-        }`}>
-          <UserCheck className={`w-8 h-8 mx-auto mb-2 ${isNeubrutalism ? 'text-black' : 'text-gray-300'}`} />
-          <p className="text-xs font-medium">No pending friend requests</p>
+            ? 'bg-[#00E5FF] text-black border-3 border-black shadow-[4px_4px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#000] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0_#000] rounded-none'
+            : 'bg-gradient-to-r from-blue-500/10 via-sky-500/10 to-indigo-500/10 border border-blue-200/80 hover:border-blue-400/80 hover:bg-gradient-to-r hover:from-blue-500/15 hover:via-sky-500/15 hover:to-indigo-500/15 rounded-2xl shadow-2xs hover:shadow-xs'
+        }`}
+        title="Open Pending Requests Panel on the right side"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`w-9 h-9 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+            isNeubrutalism
+              ? 'bg-black text-white border-2 border-black rounded-none shadow-[2px_2px_0_#000]'
+              : 'bg-blue-600 text-white rounded-xl shadow-xs'
+          }`}>
+            <UserCheck className="w-4 h-4" />
+          </div>
+          <div className="min-w-0">
+            <span className={`text-xs ${isNeubrutalism ? 'font-black uppercase text-black' : 'font-bold text-slate-800'}`}>
+              Pending Requests
+            </span>
+            <p className={`text-[11px] truncate ${isNeubrutalism ? 'font-extrabold text-black/80' : 'font-medium text-blue-600'}`}>
+              {pendingRequests.length === 1 ? "1 request waiting" : `${pendingRequests.length} requests waiting`}
+            </p>
+          </div>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {pendingRequests.map((req) => (
-            <div
-              key={req._id}
-              className={`p-3 transition-all flex flex-col gap-2.5 ${
-                isNeubrutalism
-                  ? 'bg-white border-3 border-black shadow-[4px_4px_0_#000] rounded-none text-black'
-                  : 'bg-white/80 border border-sky-100 rounded-2xl shadow-2xs hover:shadow-xs'
-              }`}
-            >
-              <div className="flex items-center gap-3 min-w-0 w-full">
-                <img
-                  src={req.sender?.profilePic || "/avatar.png"}
-                  alt={req.sender?.fullName}
-                  className={`w-10 h-10 object-cover flex-shrink-0 ${
-                    isNeubrutalism
-                      ? 'border-2 border-black rounded-none shadow-[2px_2px_0_#000]'
-                      : 'rounded-full ring-2 ring-blue-100'
-                  }`}
-                  onError={(e) => {
-                    e.target.src = "/avatar.png";
-                  }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className={`text-xs truncate ${isNeubrutalism ? 'font-black text-black' : 'font-semibold text-gray-900'}`}>{req.sender?.fullName}</p>
-                  <p className={`text-[11px] truncate ${isNeubrutalism ? 'font-extrabold text-black/70' : 'font-medium text-blue-600'}`}>
-                    @{req.sender?.username || req.sender?.email?.split("@")[0]}
-                  </p>
-                </div>
-              </div>
 
-              <div className={`flex items-center gap-2 w-full pt-2 ${
-                isNeubrutalism ? 'border-t-2 border-black' : 'border-t border-sky-100/70'
-              }`}>
-                <button
-                  onClick={() => acceptFriendRequest(req._id)}
-                  className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                    isNeubrutalism
-                      ? 'bg-[#00E676] text-black border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-xs hover:scale-[1.02] font-semibold'
-                  }`}
-                >
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Accept</span>
-                </button>
-                <button
-                  onClick={() => declineFriendRequest(req._id)}
-                  className={`flex-1 py-1.5 px-2 text-xs font-black uppercase flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                    isNeubrutalism
-                      ? 'bg-[#FF007A] text-white border-2 border-black shadow-[2px_2px_0_#000] hover:-translate-x-0.5 hover:-translate-y-0.5 rounded-none'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold'
-                  }`}
-                >
-                  <X className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>Decline</span>
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`px-2 py-0.5 text-[11px] font-bold transition-all ${
+            isNeubrutalism
+              ? 'bg-[#FF007A] text-white border-2 border-black font-black uppercase rounded-none shadow-[1px_1px_0_#000]'
+              : 'bg-blue-600 text-white font-bold rounded-full px-2.5 py-0.5 shadow-2xs group-hover:bg-blue-700'
+          }`}>
+            {pendingRequests.length}
+          </span>
+          {isNeubrutalism ? (
+            <ArrowRight className="w-4 h-4 text-black stroke-[3] group-hover:translate-x-0.5 transition-transform" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+          )}
         </div>
-      )}
+      </button>
     </div>
   );
 });

@@ -1,4 +1,4 @@
-import React, { memo, useRef, useEffect } from "react";
+import React, { memo, useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Users,
@@ -320,42 +320,28 @@ const MiniSidebarRail = memo(({
               </button>
             </Tooltip>
 
-            {/* Pending Requests List */}
-            {pendingRequests.map((req) => (
-              <div key={req._id} className="relative flex flex-col items-center gap-1 my-1">
-                <Tooltip label={`Request from ${req.sender?.fullName}`} position="right">
-                  <div className={`w-10 h-10 overflow-hidden ${
-                    isNeubrutalism ? 'border-2 border-black rounded-none shadow-[2px_2px_0_#000]' : 'rounded-full border-2 border-amber-400'
+            {/* Pending Requests Button */}
+            {pendingRequests.length > 0 && (
+              <Tooltip label={`Pending Requests (${pendingRequests.length})`} position="right">
+                <button
+                  onClick={() => useChatStore.getState().setIsRequestsOpen(true)}
+                  className={`w-10 h-10 relative flex items-center justify-center cursor-pointer transition-all ${
+                    isNeubrutalism
+                      ? 'bg-[#00E5FF] text-black border-2 border-black shadow-[2px_2px_0_#000] font-black rounded-none hover:-translate-x-0.5 hover:-translate-y-0.5'
+                      : 'bg-blue-600 text-white rounded-2xl shadow-xs hover:scale-105'
+                  }`}
+                >
+                  <UserCheck className="w-5 h-5" />
+                  <span className={`absolute -top-1 -right-1 px-1.5 py-0.2 text-[10px] font-black ${
+                    isNeubrutalism
+                      ? 'bg-[#FF007A] text-white border border-black rounded-none'
+                      : 'bg-red-500 text-white rounded-full shadow-2xs'
                   }`}>
-                    <img
-                      src={req.sender?.profilePic || "/avatar.png"}
-                      alt={req.sender?.fullName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </Tooltip>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => acceptFriendRequest(req._id)}
-                    className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
-                      isNeubrutalism ? 'bg-[#00E676] text-black border border-black rounded-none font-bold' : 'rounded-full bg-emerald-500 text-white'
-                    }`}
-                    title="Accept"
-                  >
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </button>
-                  <button
-                    onClick={() => declineFriendRequest(req._id)}
-                    className={`w-5 h-5 flex items-center justify-center cursor-pointer ${
-                      isNeubrutalism ? 'bg-black text-white border border-black rounded-none font-bold' : 'rounded-full bg-gray-400 text-white'
-                    }`}
-                    title="Decline"
-                  >
-                    <X className="w-3 h-3 stroke-[3]" />
-                  </button>
-                </div>
-              </div>
-            ))}
+                    {pendingRequests.length}
+                  </span>
+                </button>
+              </Tooltip>
+            )}
 
             {/* Recommended Users List */}
             {recommendedUsers.map((user) => (

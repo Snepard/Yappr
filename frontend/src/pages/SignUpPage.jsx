@@ -146,7 +146,7 @@ const SignupPage = () => {
                       ? 'bg-white text-black border-3 border-black shadow-[3px_3px_0_#000] focus:shadow-[5px_5px_0_#000] focus:outline-none rounded-none font-bold placeholder:text-gray-500'
                       : 'bg-black/20 border-2 border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400'
                   }`}
-                  placeholder="Aryan Sharma"
+                  placeholder="Aryan Singh"
                 />
               </div>
 

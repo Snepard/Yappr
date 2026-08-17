@@ -47,6 +47,7 @@ export const useChatStore = create((set, get) => ({
   users: [],
   selectedUser: null,
   isInviteOpen: false,
+  isRequestsOpen: false,
   isUsersLoading: false,
   isMessagesLoading: false,
 
@@ -54,9 +55,24 @@ export const useChatStore = create((set, get) => ({
     if (isOpen) {
       useGroupStore.getState().setSelectedGroup(null);
       useGroupStore.getState().setIsCreatingGroup(false);
+      useGroupStore.getState().setIsGroupInfoOpen(false);
     }
     set((state) => ({
       isInviteOpen: isOpen,
+      isRequestsOpen: isOpen ? false : state.isRequestsOpen,
+      selectedUser: isOpen ? null : state.selectedUser,
+    }));
+  },
+
+  setIsRequestsOpen: (isOpen) => {
+    if (isOpen) {
+      useGroupStore.getState().setSelectedGroup(null);
+      useGroupStore.getState().setIsCreatingGroup(false);
+      useGroupStore.getState().setIsGroupInfoOpen(false);
+    }
+    set((state) => ({
+      isRequestsOpen: isOpen,
+      isInviteOpen: isOpen ? false : state.isInviteOpen,
       selectedUser: isOpen ? null : state.selectedUser,
     }));
   },
@@ -245,7 +261,7 @@ export const useChatStore = create((set, get) => ({
       useGroupStore.getState().setSelectedGroup(null);
       useGroupStore.getState().setIsCreatingGroup(false);
     }
-    set({ selectedUser, isInviteOpen: false });
+    set({ selectedUser, isInviteOpen: false, isRequestsOpen: false });
   },
 }));
 

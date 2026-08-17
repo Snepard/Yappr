@@ -6,11 +6,12 @@ import Sidebar from "../components/Sidebar";
 import NoChatSelected from "../components/NoChatSelected";
 import ChatContainer from "../components/ChatContainer";
 import InvitePanel from "../components/InvitePanel";
+import PendingRequestsPanel from "../components/PendingRequestsPanel";
 import CreateGroupPanel from "../components/CreateGroupPanel";
 import GroupInfoPanel from "../components/GroupInfoPanel";
 
 const HomePage = () => {
-  const { selectedUser, isInviteOpen } = useChatStore();
+  const { selectedUser, isInviteOpen, isRequestsOpen } = useChatStore();
   const { selectedGroup, isCreatingGroup, isGroupInfoOpen, setIsGroupInfoOpen } = useGroupStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const theme = useThemeStore((state) => state.theme);
@@ -18,7 +19,7 @@ const HomePage = () => {
 
   const showGroupInfo = Boolean(isGroupInfoOpen && selectedGroup);
   const hasActiveChat = Boolean(selectedUser || selectedGroup);
-  const isRightWindowActive = Boolean(hasActiveChat || isInviteOpen || isCreatingGroup || showGroupInfo);
+  const isRightWindowActive = Boolean(hasActiveChat || isInviteOpen || isRequestsOpen || isCreatingGroup || showGroupInfo);
 
   return (
     <>
@@ -52,6 +53,8 @@ const HomePage = () => {
           >
             {isInviteOpen ? (
               <InvitePanel />
+            ) : isRequestsOpen ? (
+              <PendingRequestsPanel />
             ) : isCreatingGroup ? (
               <CreateGroupPanel />
             ) : showGroupInfo ? (
