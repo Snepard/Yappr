@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 // Client-side End-to-End Encryption (E2EE) Utility using Web Crypto API (SubtleCrypto)
 
 const DB_NAME = "Yappr_E2EE_Store";
@@ -164,5 +166,83 @@ export const decryptText = async (ciphertextBase64, ivBase64, sharedKey) => {
   } catch (error) {
     console.error("E2EE decryption error:", error);
     return "[Encrypted Message - Unable to decrypt]";
+  }
+};
+
+// ==========================================
+// 8. Server-Backed Key Envelope Management
+// ==========================================
+
+/**
+ * Derives a 256-bit AES-GCM CryptoKey from a secret (Password or 6-digit PIN)
+ * Pipeline: Secret + bcrypt salt -> bcrypt hash -> SHA-256 digest (32 bytes) -> AES-GCM Key
+ */
+export const deriveMasterKeyFromSecret = async (secret, salt = null) => {
+  const secretSalt = salt || bcrypt.genSaltSync(10);
+  const bcryptHash = await bcrypt.hash(secret, secretSalt);
+  const hashBuffer = await window.crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(bcryptHash)
+  );
+
+  const masterKey = await window.crypto.subtle.importKey(
+    "raw",
+    hashBuffer,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt", "decrypt"]
+  );
+
+  return { masterKey, salt: secretSalt };
+};
+
+/**
+ * Encrypts a Private Key JWK with a secret (Password or 6-Digit PIN) using AES-256-GCM
+ */
+export const encryptPrivateKeyWithSecret = async (privateKeyJwk, secret, existingSalt = null) => {
+  const { masterKey, salt } = await deriveMasterKeyFromSecret(secret, existingSalt);
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const data = new TextEncoder().encode(JSON.stringify(privateKeyJwk));
+
+  const encryptedBuffer = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv: iv,
+    },
+    masterKey,
+    data
+  );
+
+  return {
+    ciphertextBase64: arrayBufferToBase64(encryptedBuffer),
+    salt,
+    ivBase64: arrayBufferToBase64(iv),
+  };
+};
+
+/**
+ * Decrypts a Private Key JWK from ciphertext using the secret (Password or 6-Digit PIN)
+ */
+export const decryptPrivateKeyWithSecret = async (ciphertextBase64, salt, ivBase64, secret) => {
+  try {
+    const { masterKey } = await deriveMasterKeyFromSecret(secret, salt);
+    const ciphertextBuffer = base64ToArrayBuffer(ciphertextBase64);
+    const iv = base64ToArrayBuffer(ivBase64);
+
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: iv,
+      },
+      masterKey,
+      ciphertextBuffer
+    );
+
+    const decoder = new TextDecoder();
+    const jsonString = decoder.decode(decryptedBuffer);
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Failed to decrypt private key with secret:", error);
+    throw new Error("Invalid secret or corrupted key backup");
   }
 };

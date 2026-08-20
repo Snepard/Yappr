@@ -57,6 +57,13 @@ export const signup = async (req,res) => {
                 username: newUser.username,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
+                publicKey: newUser.publicKey,
+                encryptedPrivateKey: newUser.encryptedPrivateKey,
+                keySalt: newUser.keySalt,
+                keyIv: newUser.keyIv,
+                pinEncryptedPrivateKey: newUser.pinEncryptedPrivateKey,
+                pinSalt: newUser.pinSalt,
+                pinIv: newUser.pinIv,
             });
         } else {
             res.status(400).json({ message: "Invalid user data" });
@@ -109,6 +116,13 @@ export const login = async (req,res) => {
             username: user.username || user.email.split("@")[0],
             email: user.email,
             profilePic: user.profilePic,
+            publicKey: user.publicKey,
+            encryptedPrivateKey: user.encryptedPrivateKey,
+            keySalt: user.keySalt,
+            keyIv: user.keyIv,
+            pinEncryptedPrivateKey: user.pinEncryptedPrivateKey,
+            pinSalt: user.pinSalt,
+            pinIv: user.pinIv,
         });        
     } catch (error) {
         console.log("Error in login controller", error.message);
@@ -136,7 +150,7 @@ export const updateProfile = async (req,res) => {
         }
 
         const uploadResponse = await cloudinary.uploader.upload(profilePic);
-        const updatedUser = await User.findByIdAndUpdate(userid, {profilePic:uploadResponse.secure_url}, {new:true});
+        const updatedUser = await User.findByIdAndUpdate(userid, {profilePic:uploadResponse.secure_url}, {new:true}).select("-password");
 
         res.status(200).json({updatedUser});
 
@@ -276,6 +290,11 @@ export const resetPassword = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
         
+        // Invalidate old password envelope since password has changed, but keep pinEncryptedPrivateKey intact!
+        user.encryptedPrivateKey = null;
+        user.keySalt = null;
+        user.keyIv = null;
+
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
 
@@ -288,31 +307,55 @@ export const resetPassword = async (req, res) => {
     }
 };
 
-export const updatePublicKey = async (req, res) => {
+export const updateE2EEKeys = async (req, res) => {
   try {
-    const { publicKey } = req.body;
+    const {
+      publicKey,
+      encryptedPrivateKey,
+      keySalt,
+      keyIv,
+      pinEncryptedPrivateKey,
+      pinSalt,
+      pinIv,
+    } = req.body;
     const userId = req.user._id;
 
-    if (!publicKey) {
-      return res.status(400).json({ message: "Public key is required" });
-    }
+    const updateFields = {};
+    if (publicKey !== undefined) updateFields.publicKey = publicKey;
+    if (encryptedPrivateKey !== undefined) updateFields.encryptedPrivateKey = encryptedPrivateKey;
+    if (keySalt !== undefined) updateFields.keySalt = keySalt;
+    if (keyIv !== undefined) updateFields.keyIv = keyIv;
+    if (pinEncryptedPrivateKey !== undefined) updateFields.pinEncryptedPrivateKey = pinEncryptedPrivateKey;
+    if (pinSalt !== undefined) updateFields.pinSalt = pinSalt;
+    if (pinIv !== undefined) updateFields.pinIv = pinIv;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { publicKey },
+      { $set: updateFields },
       { new: true }
     ).select("-password");
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.error("Error in updatePublicKey controller:", error.message);
+    console.error("Error in updateE2EEKeys controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+export const updatePublicKey = updateE2EEKeys;
+
 export const changePassword = async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const {
+            currentPassword,
+            newPassword,
+            encryptedPrivateKey,
+            keySalt,
+            keyIv,
+            pinEncryptedPrivateKey,
+            pinSalt,
+            pinIv,
+        } = req.body;
         const userId = req.user._id;
 
         if (!currentPassword || !newPassword) {
@@ -335,11 +378,70 @@ export const changePassword = async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
+
+        // Atomically update the re-encrypted private key envelope with the new password
+        if (encryptedPrivateKey !== undefined) user.encryptedPrivateKey = encryptedPrivateKey;
+        if (keySalt !== undefined) user.keySalt = keySalt;
+        if (keyIv !== undefined) user.keyIv = keyIv;
+        if (pinEncryptedPrivateKey !== undefined) user.pinEncryptedPrivateKey = pinEncryptedPrivateKey;
+        if (pinSalt !== undefined) user.pinSalt = pinSalt;
+        if (pinIv !== undefined) user.pinIv = pinIv;
+
         await user.save();
 
-        res.status(200).json({ message: "Password updated successfully" });
+        res.status(200).json({
+            message: "Password updated successfully",
+            user: {
+                _id: user._id,
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email,
+                profilePic: user.profilePic,
+                publicKey: user.publicKey,
+                encryptedPrivateKey: user.encryptedPrivateKey,
+                keySalt: user.keySalt,
+                keyIv: user.keyIv,
+                pinEncryptedPrivateKey: user.pinEncryptedPrivateKey,
+                pinSalt: user.pinSalt,
+                pinIv: user.pinIv,
+            }
+        });
     } catch (error) {
         console.error("Error in changePassword controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const recordPinAttempt = async (req, res) => {
+    try {
+        const { success } = req.body;
+        const userId = req.user._id;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        if (user.pinLockedUntil && user.pinLockedUntil > Date.now()) {
+            const remainingMinutes = Math.ceil((user.pinLockedUntil - Date.now()) / 60000);
+            return res.status(429).json({ message: `Too many failed PIN attempts. Locked for ${remainingMinutes} more minute(s).` });
+        }
+
+        if (success) {
+            user.pinFailedAttempts = 0;
+            user.pinLockedUntil = null;
+        } else {
+            user.pinFailedAttempts = (user.pinFailedAttempts || 0) + 1;
+            if (user.pinFailedAttempts >= 5) {
+                user.pinLockedUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 min lock
+            }
+        }
+
+        await user.save();
+        res.status(200).json({
+            pinFailedAttempts: user.pinFailedAttempts,
+            pinLockedUntil: user.pinLockedUntil
+        });
+    } catch (error) {
+        console.error("Error in recordPinAttempt controller:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

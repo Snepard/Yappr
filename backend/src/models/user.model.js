@@ -37,6 +37,40 @@ const userSchema = new mongoose.Schema(
             type: Object,
             default: null,
         },
+        // Password-encrypted backup
+        encryptedPrivateKey: {
+            type: String,
+            default: null,
+        },
+        keySalt: {
+            type: String,
+            default: null,
+        },
+        keyIv: {
+            type: String,
+            default: null,
+        },
+        // 6-Digit PIN backup (recovery safety net)
+        pinEncryptedPrivateKey: {
+            type: String,
+            default: null,
+        },
+        pinSalt: {
+            type: String,
+            default: null,
+        },
+        pinIv: {
+            type: String,
+            default: null,
+        },
+        pinFailedAttempts: {
+            type: Number,
+            default: 0,
+        },
+        pinLockedUntil: {
+            type: Date,
+            default: null,
+        },
         resetPasswordToken: String,
         resetPasswordExpire: Date,
     },

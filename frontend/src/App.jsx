@@ -16,6 +16,8 @@ import { useThemeStore } from './store/useThemeStore';
 import { Toaster } from "react-hot-toast";
 import PageWrapper from './components/PageWrapper';
 import DeleteMessageAnimation from './components/DeleteMessageAnimation';
+import PinRecoveryModal from './components/PinRecoveryModal';
+import PinSetupModal from './components/PinSetupModal';
 
 const App = () => {
   const authUser = useAuthStore((state) => state.authUser);
@@ -49,6 +51,9 @@ const App = () => {
           <Route path='/profile' element={<PageWrapper> {authUser ? <ProfilePage/> : <Navigate to="/login"/>} </PageWrapper>} />
         </Routes>
       </AnimatePresence>
+
+      <PinRecoveryModal />
+      <PinSetupModal />
 
       <Toaster 
         position="top-center"

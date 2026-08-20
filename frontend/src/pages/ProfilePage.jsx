@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Camera, ArrowLeft, Home, KeyRound, Lock, Eye, EyeOff, Palette, Check, Sparkles, Zap } from 'lucide-react';
+import { User, Mail, Camera, ArrowLeft, Home, KeyRound, Lock, Eye, EyeOff, Palette, Check, Sparkles, Zap, ShieldCheck } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { Link } from "react-router-dom";
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-  const { authUser, isUpdatingProfile, updateProfile, changePassword, isChangingPassword } = useAuthStore();
+  const { authUser, isUpdatingProfile, updateProfile, changePassword, isChangingPassword, setPinSetupModalOpen } = useAuthStore();
   const { theme, setTheme } = useThemeStore();
   const isNeubrutalism = theme === 'neubrutalism';
 
@@ -512,12 +512,26 @@ const ProfilePage = () => {
                     </button>
                   </form>
                 ) : (
-                  <div className="py-10 text-center space-y-2 flex-1 flex flex-col justify-center items-center">
-                    <Lock className={`w-10 h-10 mx-auto opacity-50 mb-1 ${isNeubrutalism ? 'text-black' : 'text-cyan-400'}`} />
+                  <div className="py-8 text-center space-y-3 flex-1 flex flex-col justify-center items-center">
+                    <Lock className={`w-8 h-8 mx-auto opacity-60 ${isNeubrutalism ? 'text-black' : 'text-cyan-400'}`} />
                     <p className={`text-sm font-bold ${isNeubrutalism ? 'text-black uppercase' : 'text-white'}`}>Password & Security Controls</p>
                     <p className={`text-xs max-w-xs ${isNeubrutalism ? 'text-black/80 font-medium' : 'text-blue-300/70'}`}>
-                      Click "Change Password" above to update your password at any time.
+                      Click "Change Password" to update your account password while preserving all your E2EE keys.
                     </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setPinSetupModalOpen(true)}
+                        className={`text-xs font-bold px-3.5 py-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+                          isNeubrutalism
+                            ? 'bg-[#FFE600] text-black border-2 border-black shadow-[2px_2px_0px_#000] hover:shadow-[4px_4px_0px_#000] rounded-none'
+                            : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 rounded-xl'
+                        }`}
+                      >
+                        <ShieldCheck size={14} />
+                        {authUser?.pinEncryptedPrivateKey ? "Update 6-Digit Backup PIN" : "Configure 6-Digit Backup PIN"}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
