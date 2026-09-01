@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, KeyRound, Lock, AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ShieldAlert, KeyRound, AlertTriangle, Eye, EyeOff, Loader2, X } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import toast from 'react-hot-toast';
@@ -51,24 +51,26 @@ const PinRecoveryModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-950/20 backdrop-blur-md animate-fade-in select-none">
       <div className={`w-full max-w-md p-6 sm:p-8 transition-all ${
         isNeubrutalism
           ? 'bg-white border-4 border-black shadow-[8px_8px_0_#000] text-black'
-          : 'bg-slate-900/90 border border-white/20 rounded-3xl shadow-2xl text-white backdrop-blur-xl'
+          : 'bg-white/75 backdrop-blur-3xl backdrop-saturate-200 border border-white/90 shadow-[0_24px_70px_rgba(14,165,233,0.25),0_4px_16px_rgba(0,0,0,0.04)] rounded-3xl text-slate-800 ring-1 ring-sky-300/30'
       }`}>
         {/* Header */}
-        <div className="flex items-center space-x-3 mb-4">
+        <div className="flex items-center space-x-3.5 mb-5">
           <div className={`p-3 rounded-2xl ${
-            isNeubrutalism ? 'bg-[#FFE600] border-2 border-black' : 'bg-blue-600/20 border border-blue-500/30'
+            isNeubrutalism
+              ? 'bg-[#FFE600] border-2 border-black'
+              : 'bg-blue-500/10 border border-blue-500/20 text-blue-600 shadow-xs backdrop-blur-sm'
           }`}>
-            <KeyRound className={`w-6 h-6 ${isNeubrutalism ? 'text-black' : 'text-blue-400'}`} />
+            <KeyRound className={`w-6 h-6 ${isNeubrutalism ? 'text-black' : 'text-blue-600'}`} />
           </div>
           <div>
-            <h2 className={`text-xl font-black ${isNeubrutalism ? 'uppercase' : ''}`}>
-              Restore Encryption Keys
+            <h2 className={`text-xl font-bold ${isNeubrutalism ? 'uppercase text-black font-black' : 'text-slate-900'}`}>
+              Restore Messages
             </h2>
-            <p className={`text-xs ${isNeubrutalism ? 'text-black/80 font-bold' : 'text-slate-300'}`}>
+            <p className={`text-xs ${isNeubrutalism ? 'text-black/80 font-bold' : 'text-slate-500 font-medium'}`}>
               Zero-Knowledge E2EE Recovery
             </p>
           </div>
@@ -76,31 +78,31 @@ const PinRecoveryModal = () => {
 
         {!showConfirmReset ? (
           <>
-            <div className={`p-4 rounded-xl mb-5 text-xs leading-relaxed ${
+            <div className={`p-4 rounded-2xl mb-5 text-xs leading-relaxed ${
               isNeubrutalism
                 ? 'bg-[#E0F7FA] border-2 border-black shadow-[2px_2px_0_#000]'
-                : 'bg-blue-950/40 border border-blue-500/30 text-blue-100'
+                : 'bg-sky-50/70 backdrop-blur-lg border border-sky-200/80 text-slate-700 shadow-xs'
             }`}>
-              <p className="font-medium">
-                Enter your <strong>6-digit Backup PIN</strong> to decrypt your private key and instantly restore access to all past conversations.
+              <p className="font-normal">
+                Enter your <strong className="font-semibold text-slate-900">6-digit Recovery PIN</strong> to decrypt your private key and instantly restore access to all past conversations.
               </p>
             </div>
 
             {pinError && (
-              <div className={`p-3 rounded-xl mb-4 text-xs font-bold flex items-center space-x-2 ${
+              <div className={`p-3.5 rounded-2xl mb-4 text-xs font-semibold flex items-center space-x-2.5 ${
                 isNeubrutalism
                   ? 'bg-[#FF8080] border-2 border-black text-black'
-                  : 'bg-rose-950/50 border border-rose-500/40 text-rose-300'
+                  : 'bg-rose-50/80 backdrop-blur-sm border border-rose-200/80 text-rose-700'
               }`}>
-                <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+                <ShieldAlert className="w-4 h-4 flex-shrink-0 text-rose-500" />
                 <span>{pinError}</span>
               </div>
             )}
 
             <form onSubmit={handleRecover} className="space-y-4">
               <div>
-                <label className={`block text-xs font-black mb-1.5 ${isNeubrutalism ? 'uppercase' : 'text-slate-200'}`}>
-                  6-Digit Backup PIN
+                <label className={`block text-xs font-bold mb-1.5 ${isNeubrutalism ? 'uppercase text-black font-black' : 'text-slate-700'}`}>
+                  6-Digit Recovery PIN
                 </label>
                 <div className="relative">
                   <input
@@ -113,14 +115,14 @@ const PinRecoveryModal = () => {
                     className={`w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono font-black transition-all ${
                       isNeubrutalism
                         ? 'bg-white text-black border-3 border-black shadow-[3px_3px_0_#000] focus:shadow-[5px_5px_0_#000] focus:outline-none'
-                        : 'bg-black/40 border border-white/20 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                        : 'bg-white/80 backdrop-blur-md border border-sky-200/90 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-600 focus:bg-white shadow-xs'
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPin(!showPin)}
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer ${
-                      isNeubrutalism ? 'text-black' : 'text-white/60 hover:text-white'
+                    className={`absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer transition-colors ${
+                      isNeubrutalism ? 'text-black' : 'text-slate-400 hover:text-slate-700'
                     }`}
                   >
                     {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -131,10 +133,10 @@ const PinRecoveryModal = () => {
               <button
                 type="submit"
                 disabled={isRestoringKeys || pin.length !== 6}
-                className={`w-full py-3.5 text-sm sm:text-base font-black tracking-wide transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2 ${
+                className={`w-full py-3.5 text-sm sm:text-base font-bold tracking-wide transition-all flex items-center justify-center space-x-2 ${
                   isNeubrutalism
-                    ? 'bg-[#00F0FF] text-black uppercase border-3 border-black shadow-[4px_4px_0_#000] hover:shadow-[6px_6px_0_#000] active:translate-x-1 active:translate-y-1 rounded-none'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-blue-500 hover:to-indigo-500 transform hover:scale-[1.02]'
+                    ? 'bg-[#00F0FF] text-black uppercase border-3 border-black shadow-[4px_4px_0_#000] hover:shadow-[6px_6px_0_#000] active:translate-x-1 active:translate-y-1 rounded-none font-black cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl shadow-md shadow-blue-500/25 cursor-pointer hover:scale-[1.02] active:scale-[0.99] disabled:bg-blue-400 disabled:hover:bg-blue-400 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none'
                 }`}
               >
                 {isRestoringKeys ? (
@@ -152,8 +154,8 @@ const PinRecoveryModal = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmReset(true)}
-                className={`text-xs font-bold cursor-pointer underline ${
-                  isNeubrutalism ? 'text-black hover:text-[#FF007A]' : 'text-slate-400 hover:text-slate-200'
+                className={`text-xs font-semibold cursor-pointer underline transition-colors ${
+                  isNeubrutalism ? 'text-black hover:text-[#FF007A]' : 'text-slate-500 hover:text-blue-600'
                 }`}
               >
                 Forgot your 6-digit PIN?
@@ -162,15 +164,15 @@ const PinRecoveryModal = () => {
           </>
         ) : (
           <div className="space-y-4 animate-fade-in">
-            <div className={`p-4 rounded-xl text-xs leading-relaxed flex items-start space-x-2.5 ${
+            <div className={`p-4 rounded-2xl text-xs leading-relaxed flex items-start space-x-2.5 ${
               isNeubrutalism
                 ? 'bg-[#FFE600] border-2 border-black text-black'
-                : 'bg-amber-950/40 border border-amber-500/40 text-amber-200'
+                : 'bg-amber-50/80 backdrop-blur-sm border border-amber-200/80 text-amber-900'
             }`}>
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-600" />
               <div>
-                <p className="font-bold mb-1">Warning: Key Reset (Last Resort)</p>
-                <p>
+                <p className="font-bold mb-1 text-amber-950">Warning: Key Reset (Last Resort)</p>
+                <p className="text-amber-800">
                   Because Yappr is Zero-Knowledge E2EE, resetting your encryption keys generates a brand new key pair. You will be able to start new chats, but your past encrypted messages cannot be recovered.
                 </p>
               </div>
@@ -180,10 +182,10 @@ const PinRecoveryModal = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmReset(false)}
-                className={`flex-1 py-3 text-xs font-black uppercase transition-all cursor-pointer ${
+                className={`flex-1 py-3 text-xs font-bold uppercase transition-all cursor-pointer ${
                   isNeubrutalism
                     ? 'bg-white text-black border-2 border-black shadow-[2px_2px_0_#000]'
-                    : 'bg-white/10 hover:bg-white/20 text-white rounded-xl'
+                    : 'bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 rounded-2xl border border-sky-200/70 shadow-xs hover:text-slate-900'
                 }`}
               >
                 Go Back
@@ -192,10 +194,10 @@ const PinRecoveryModal = () => {
               <button
                 type="button"
                 onClick={handleRegenerateKeys}
-                className={`flex-1 py-3 text-xs font-black uppercase transition-all cursor-pointer ${
+                className={`flex-1 py-3 text-xs font-bold uppercase transition-all cursor-pointer ${
                   isNeubrutalism
                     ? 'bg-[#FF8080] text-black border-2 border-black shadow-[2px_2px_0_#000]'
-                    : 'bg-rose-600 hover:bg-rose-500 text-white rounded-xl shadow-lg'
+                    : 'bg-rose-600 hover:bg-rose-500 text-white rounded-2xl shadow-lg shadow-rose-500/20'
                 }`}
               >
                 Generate New Keys
