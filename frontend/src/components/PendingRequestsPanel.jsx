@@ -25,7 +25,7 @@ const PendingRequestsPanel = () => {
 
   return (
     <div
-      className={`flex-1 flex items-center justify-center p-4 sm:p-6 transition-all overflow-hidden h-full ${
+      className={`flex-1 flex flex-col sm:items-center sm:justify-center p-0 sm:p-5 md:p-8 transition-all overflow-hidden h-full w-full ${
         isNeubrutalism
           ? "bg-[#FFFDF0] text-black"
           : "bg-gradient-to-br from-slate-50/70 via-blue-50/40 to-sky-50/60 backdrop-blur-xl"
@@ -37,10 +37,10 @@ const PendingRequestsPanel = () => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ type: "spring", stiffness: 350, damping: 28 }}
-        className={`relative w-full max-w-2xl h-[560px] sm:h-[600px] max-h-[85vh] overflow-hidden flex flex-col transition-all ${
+        className={`relative w-full h-full sm:h-[600px] sm:max-h-[88vh] max-w-2xl overflow-hidden flex flex-col transition-all ${
           isNeubrutalism
-            ? "bg-white border-4 border-black shadow-[8px_8px_0_#000] rounded-none text-black"
-            : "bg-white/80 backdrop-blur-2xl backdrop-saturate-200 rounded-3xl shadow-[0_20px_60px_rgba(14,165,233,0.15)] border border-white/90 ring-1 ring-sky-500/15"
+            ? "bg-white border-0 sm:border-4 border-black shadow-none sm:shadow-[8px_8px_0_#000] rounded-none text-black"
+            : "bg-white/95 sm:bg-white/80 sm:backdrop-blur-2xl sm:backdrop-saturate-200 rounded-none sm:rounded-3xl shadow-none sm:shadow-[0_20px_60px_rgba(14,165,233,0.15)] border-0 sm:border sm:border-white/90 sm:ring-1 sm:ring-sky-500/15"
         }`}
       >
         {!isNeubrutalism && (
@@ -49,53 +49,62 @@ const PendingRequestsPanel = () => {
 
         {/* Top Header */}
         <div
-          className={`p-5 sm:p-6 text-center relative flex-shrink-0 ${
+          className={`px-5 py-5 sm:px-8 sm:py-6 min-h-[76px] sm:min-h-[88px] relative flex-shrink-0 flex items-center justify-between gap-4 ${
             isNeubrutalism
-              ? "bg-[#FFE600] text-black border-b-4 border-black"
-              : "bg-gradient-to-r from-blue-600 via-sky-600 to-indigo-600 text-white shadow-xs"
+              ? "bg-[#FFE600] text-black border-b-2 sm:border-b-4 border-black"
+              : "bg-gradient-to-r from-blue-600 via-sky-600 to-indigo-600 text-white border-b border-white/15 shadow-sm"
           }`}
         >
+          {!isNeubrutalism && (
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+          )}
+
+          <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
+            <div
+              className={`w-11 h-11 sm:w-13 sm:h-13 flex items-center justify-center shrink-0 ${
+                isNeubrutalism
+                  ? "bg-black text-white border-2 sm:border-3 border-black shadow-[2px_2px_0_#000] rounded-none"
+                  : "bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner"
+              }`}
+            >
+              <UserCheck className="w-5.5 h-5.5 sm:w-6.5 sm:h-6.5 text-white" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h2
+                className={`text-lg sm:text-2xl font-black tracking-tight truncate ${
+                  isNeubrutalism ? "uppercase text-black" : "text-white"
+                }`}
+              >
+                Pending Requests
+              </h2>
+              <p
+                className={`text-xs sm:text-sm truncate mt-0.5 sm:mt-1 ${
+                  isNeubrutalism ? "text-black/80 font-bold" : "text-blue-100 font-medium"
+                }`}
+              >
+                {pendingRequests.length === 1
+                  ? "1 request waiting for your approval"
+                  : `${pendingRequests.length} requests waiting for your approval`}
+              </p>
+            </div>
+          </div>
+
           <button
             onClick={() => setIsRequestsOpen(false)}
-            className={`absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-3 transition-all cursor-pointer shrink-0 ${
               isNeubrutalism
-                ? "bg-black text-white border border-black hover:bg-[#FF007A] rounded-none shadow-[2px_2px_0_#000]"
-                : "rounded-full bg-white/20 hover:bg-white/30 text-white hover:scale-105 active:scale-95"
+                ? "bg-black text-white border-2 border-black hover:bg-[#FF007A] rounded-none shadow-[2px_2px_0_#000] active:translate-x-0.5 active:translate-y-0.5"
+                : "rounded-xl sm:rounded-2xl bg-white/15 hover:bg-white/25 text-white hover:scale-105 active:scale-95 backdrop-blur-sm border border-white/20"
             }`}
             title="Close"
           >
-            <X className={`w-4 h-4 sm:w-5 sm:h-5 ${isNeubrutalism ? "stroke-[3]" : ""}`} />
+            <X className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
-
-          <div
-            className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center mx-auto mb-2.5 sm:mb-3 ${
-              isNeubrutalism
-                ? "bg-black text-white border-2 border-black shadow-[3px_3px_0_#000] rounded-none"
-                : "bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner"
-            }`}
-          >
-            <UserCheck className="w-6 h-6 sm:w-7 sm:h-7" />
-          </div>
-          <h2
-            className={`text-lg sm:text-xl font-black ${
-              isNeubrutalism ? "uppercase tracking-tight text-black" : "tracking-wide text-white font-extrabold"
-            }`}
-          >
-            Pending Friend Requests
-          </h2>
-          <p
-            className={`text-xs mt-0.5 sm:mt-1 ${
-              isNeubrutalism ? "text-black font-extrabold" : "text-blue-100 font-medium"
-            }`}
-          >
-            {pendingRequests.length === 1
-              ? "You have 1 pending request waiting for approval"
-              : `You have ${pendingRequests.length} pending requests waiting for approval`}
-          </p>
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
+        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
           {isRequestsLoading ? (
             <SidebarSkeleton />
           ) : pendingRequests.length === 0 ? (
@@ -218,9 +227,9 @@ const PendingRequestsPanel = () => {
 
         {/* Fixed Footer */}
         <div
-          className={`px-5 sm:px-6 py-4 text-center flex-shrink-0 ${
+          className={`px-4 py-3 sm:px-6 sm:py-4 text-center flex-shrink-0 ${
             isNeubrutalism
-              ? "bg-[#FFFDF0] border-t-3 border-black text-black font-extrabold text-[11px]"
+              ? "bg-[#FFFDF0] border-t-2 sm:border-t-3 border-black text-black font-extrabold text-[11px]"
               : "bg-white/60 backdrop-blur-md border-t border-slate-200/70 text-slate-500 font-medium text-[11px]"
           }`}
         >

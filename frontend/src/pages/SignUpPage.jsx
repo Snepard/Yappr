@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, AtSign, ShieldCheck, KeyRound, Info } from 'lucide-react';
-import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, User, Mail, Lock, AtSign, ShieldCheck, KeyRound, Info, Sparkles } from 'lucide-react';
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import toast from 'react-hot-toast';
 
 const SignupPage = () => {
+  const [searchParams] = useSearchParams();
+  const invitedBy = searchParams.get("ref");
   const [showPassword, setShowPassword] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [formData, setFormData] = useState({
@@ -142,6 +144,32 @@ const SignupPage = () => {
                 Join YAPPR with Zero-Knowledge E2EE Protection!
               </p>
             </div>
+
+            {invitedBy && (
+              <div
+                className={`mb-5 p-3.5 flex items-center gap-3 transition-all ${
+                  isNeubrutalism
+                    ? 'bg-[#00E676] border-3 border-black shadow-[3px_3px_0_#000] rounded-none text-black'
+                    : 'bg-blue-500/15 border border-blue-400/30 text-sky-200 backdrop-blur-md'
+                }`}
+              >
+                <div
+                  className={`p-2 shrink-0 ${
+                    isNeubrutalism ? 'bg-black text-[#00E676] border border-black' : 'bg-blue-400/20 text-sky-300 rounded-xl'
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                </div>
+                <div className="text-xs min-w-0 flex-1">
+                  <p className={`font-black ${isNeubrutalism ? 'text-black uppercase' : 'text-white'}`}>
+                    Invited by @{invitedBy}
+                  </p>
+                  <p className={`text-[11px] ${isNeubrutalism ? 'text-black/80 font-bold' : 'text-sky-300/80'}`}>
+                    Create your account to connect and chat on YAPPR.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}

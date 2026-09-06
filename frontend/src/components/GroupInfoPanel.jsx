@@ -145,7 +145,7 @@ const GroupInfoPanel = ({ onClose }) => {
 
   return (
     <div
-      className={`flex-1 flex items-center justify-center p-4 sm:p-6 transition-all overflow-hidden h-full ${
+      className={`flex-1 flex flex-col sm:items-center sm:justify-center p-0 sm:p-5 md:p-8 transition-all overflow-hidden h-full w-full ${
         isNeubrutalism
           ? "bg-[#FFFDF0] text-black"
           : "bg-gradient-to-br from-slate-50/70 via-blue-50/40 to-sky-50/60 backdrop-blur-xl"
@@ -157,23 +157,23 @@ const GroupInfoPanel = ({ onClose }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ type: "spring", stiffness: 350, damping: 28 }}
-        className={`relative w-full max-w-2xl h-[580px] sm:h-[620px] max-h-[88vh] overflow-hidden flex flex-col transition-all ${
+        className={`relative w-full h-full sm:h-[620px] sm:max-h-[88vh] max-w-2xl overflow-hidden flex flex-col transition-all ${
           isNeubrutalism
-            ? "bg-white border-4 border-black shadow-[8px_8px_0_#000] rounded-none text-black"
-            : "bg-white/80 backdrop-blur-2xl backdrop-saturate-200 rounded-3xl shadow-[0_20px_60px_rgba(14,165,233,0.15)] border border-white/90 ring-1 ring-sky-500/15"
+            ? "bg-white border-0 sm:border-4 border-black shadow-none sm:shadow-[8px_8px_0_#000] rounded-none text-black"
+            : "bg-white/95 sm:bg-white/80 sm:backdrop-blur-2xl sm:backdrop-saturate-200 rounded-none sm:rounded-3xl shadow-none sm:shadow-[0_20px_60px_rgba(14,165,233,0.15)] border-0 sm:border sm:border-white/90 sm:ring-1 sm:ring-sky-500/15"
         }`}
       >
         {/* Top Header */}
         <div
-          className={`p-5 sm:p-6 text-center relative flex-shrink-0 ${
+          className={`p-4 sm:p-6 text-center relative flex-shrink-0 ${
             isNeubrutalism
-              ? "bg-[#FFE600] border-b-3 border-black text-black"
-              : "bg-gradient-to-r from-blue-600 via-sky-600 to-indigo-600 text-white shadow-xs"
+              ? "bg-[#FFE600] border-b-2 sm:border-b-3 border-black text-black"
+              : "bg-gradient-to-r from-blue-600 via-sky-600 to-indigo-600 text-white shadow-xs border-b border-white/15"
           }`}
         >
           <button
             onClick={handleClose}
-            className={`absolute top-3.5 left-3.5 sm:top-4 sm:left-4 p-1.5 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold px-3 ${
+            className={`absolute top-3 left-3 sm:top-4 sm:left-4 p-1.5 transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold px-2.5 sm:px-3 ${
               isNeubrutalism
                 ? "bg-white border-2 border-black text-black shadow-[2px_2px_0_#000] rounded-none font-bold"
                 : "rounded-full bg-white/20 hover:bg-white/30 text-white hover:scale-105 active:scale-95"
@@ -186,7 +186,7 @@ const GroupInfoPanel = ({ onClose }) => {
 
           <button
             onClick={handleClose}
-            className={`absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-1.5 transition-colors cursor-pointer ${
+            className={`absolute top-3 right-3 sm:top-4 sm:right-4 p-1.5 transition-colors cursor-pointer ${
               isNeubrutalism
                 ? "bg-[#FF007A] text-white border-2 border-black shadow-[2px_2px_0_#000] rounded-none font-bold"
                 : "rounded-full bg-white/20 hover:bg-white/30 text-white hover:scale-105 active:scale-95"
@@ -247,7 +247,7 @@ const GroupInfoPanel = ({ onClose }) => {
         <div
           className={
             isNeubrutalism
-              ? "flex border-b-3 border-black bg-white px-2 pt-2 gap-1 font-black"
+              ? "flex border-b-2 sm:border-b-3 border-black bg-white px-2 pt-2 gap-1 font-black"
               : "flex border-b border-sky-100/80 bg-slate-100/60 p-1.5 gap-1.5"
           }
         >
