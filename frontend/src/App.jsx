@@ -4,10 +4,8 @@ import { AnimatePresence } from "framer-motion";
 import Navbar from './components/Navbar';
 
 import HomePage from "./pages/HomePage";
-import SignUpPage from "./pages/SignUpPage";
-import LoginPage from "./pages/LoginPage";
+import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -26,6 +24,8 @@ const App = () => {
   const initTheme = useThemeStore((state) => state.initTheme);
   const location = useLocation();
 
+  const isAuthRoute = ['/login', '/signup', '/auth', '/forgot-password'].includes(location.pathname);
+
   useEffect(() => {
     checkAuth();
     initTheme();
@@ -42,11 +42,12 @@ const App = () => {
   return (
     <div> 
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+        <Routes location={location} key={isAuthRoute ? 'auth' : location.pathname}>
           <Route path='/' element={<PageWrapper> {authUser ? <HomePage/> : <Navigate to="/login"/>} </PageWrapper>} />
-          <Route path='/signup' element={<PageWrapper> {!authUser ? <SignUpPage/> : <Navigate to="/"/>} </PageWrapper>} />
-          <Route path='/login' element={<PageWrapper> {!authUser ? <LoginPage/> : <Navigate to="/"/>} </PageWrapper>} />
-          <Route path='/forgot-password' element={<PageWrapper> {!authUser ? <ForgotPasswordPage/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/signup' element={<PageWrapper> {!authUser ? <AuthPage defaultMode="signup"/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/login' element={<PageWrapper> {!authUser ? <AuthPage defaultMode="login"/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/auth' element={<PageWrapper> {!authUser ? <AuthPage/> : <Navigate to="/"/>} </PageWrapper>} />
+          <Route path='/forgot-password' element={<PageWrapper> {!authUser ? <AuthPage defaultMode="forgot-password"/> : <Navigate to="/"/>} </PageWrapper>} />
           <Route path='/reset-password/:token' element={<PageWrapper> {!authUser ? <ResetPasswordPage/> : <Navigate to="/"/>} </PageWrapper>} />
           <Route path='/profile' element={<PageWrapper> {authUser ? <ProfilePage/> : <Navigate to="/login"/>} </PageWrapper>} />
         </Routes>
