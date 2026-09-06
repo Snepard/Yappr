@@ -4,6 +4,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import toast from 'react-hot-toast';
+import GradientWaves from '../components/GradientWaves';
 
 const SignupPage = () => {
   const [searchParams] = useSearchParams();
@@ -100,9 +101,9 @@ const SignupPage = () => {
 
   return (
     <div className={`min-h-screen relative overflow-hidden flex flex-col justify-between ${
-      isNeubrutalism ? 'bg-[#FFFDF0] text-black' : 'bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white'
+      isNeubrutalism ? 'bg-[#FFFDF0] text-black' : 'bg-[#030712] text-white'
     }`}>
-      {/* Background Grid */}
+      {/* Background */}
       {isNeubrutalism ? (
         <div 
           className="absolute inset-0 z-0 opacity-40 pointer-events-none"
@@ -112,8 +113,30 @@ const SignupPage = () => {
           }}
         />
       ) : (
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-900/40 to-slate-950" />
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <GradientWaves
+            horizonColor="#000dff"
+            waveColor="#51d3fa"
+            crestColor="#a0f3fa"
+            speed={0.4}
+            amplitude={2.5}
+            waveScale={0.6}
+            waveRatio={0.9}
+            swell={35}
+            turbulence={20}
+            tilt={1.11}
+            zoom={1}
+            height={5.5}
+            fogDepth={15}
+            detail="medium"
+            brightness={1}
+            opacity={1}
+            mouseInteraction
+            parallaxStrength={0.5}
+            grain
+            grainIntensity={0.05}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-slate-950/60 pointer-events-none" />
         </div>
       )}
 
