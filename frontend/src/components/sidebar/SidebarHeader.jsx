@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { User, UserPlus, LogOut, ChevronDown, PanelLeftClose } from "lucide-react";
+import { User, UserPlus, LogOut, ChevronDown, PanelLeftClose, Coffee, ArrowRight } from "lucide-react";
 import Tooltip from "../Tooltip";
 import { useThemeStore } from "../../store/useThemeStore";
 
@@ -11,6 +11,7 @@ const SidebarHeader = ({
   onOpenInvite,
   onLogout,
   onCollapse,
+  onOpenYapSession,
 }) => {
   const dropdownRef = useRef(null);
   const theme = useThemeStore((state) => state.theme);
@@ -165,6 +166,54 @@ const SidebarHeader = ({
               @{authUser?.username || authUser?.email?.split("@")[0]}
             </p>
           </div>
+        </div>
+
+        {/* Tea Time Quick Launch Button */}
+        <div className="mt-2.5">
+          <button
+            onClick={onOpenYapSession}
+            className={`w-full p-2.5 flex items-center justify-between transition-all cursor-pointer select-none group ${
+              isNeubrutalism
+                ? "bg-[#FFE600] hover:bg-yellow-300 text-black border-3 border-black shadow-[3px_3px_0_#000] active:translate-x-0.5 active:translate-y-0.5 rounded-none"
+                : "bg-slate-900/95 hover:bg-slate-900 text-white border border-orange-500/35 hover:border-orange-500/60 rounded-xl shadow-sm hover:shadow-[0_4px_16px_rgba(249,115,22,0.15)]"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`w-7 h-7 flex items-center justify-center transition-transform group-hover:scale-105 ${
+                  isNeubrutalism
+                    ? "bg-black text-[#FFE600] border-2 border-black rounded-none shadow-[1px_1px_0_#000]"
+                    : "bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-lg shadow-xs"
+                }`}
+              >
+                <Coffee className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div className="text-left">
+                <div
+                  className={`text-xs font-bold leading-tight ${
+                    isNeubrutalism ? "text-black uppercase font-black" : "text-white"
+                  }`}
+                >
+                  Tea Time
+                </div>
+                <div
+                  className={`text-[10px] leading-tight mt-0.5 ${
+                    isNeubrutalism ? "text-black/80 font-bold" : "text-orange-300/80 font-medium"
+                  }`}
+                >
+                  Disappearing chat
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`p-1 transition-transform group-hover:translate-x-0.5 ${
+                isNeubrutalism ? "text-black" : "text-orange-400 group-hover:text-orange-300"
+              }`}
+            >
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            </div>
+          </button>
         </div>
       </div>
     </div>

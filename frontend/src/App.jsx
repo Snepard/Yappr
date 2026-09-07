@@ -11,6 +11,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
+import { useYapStore } from './store/useYapStore';
 import { Toaster } from "react-hot-toast";
 import PageWrapper from './components/PageWrapper';
 import DeleteMessageAnimation from './components/DeleteMessageAnimation';
@@ -19,9 +20,12 @@ import PinSetupModal from './components/PinSetupModal';
 
 const App = () => {
   const authUser = useAuthStore((state) => state.authUser);
+  const socket = useAuthStore((state) => state.socket);
   const checkAuth = useAuthStore((state) => state.checkAuth);
   const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth);
   const initTheme = useThemeStore((state) => state.initTheme);
+  const subscribeToGlobalInvites = useYapStore((state) => state.subscribeToGlobalInvites);
+  const unsubscribeFromGlobalInvites = useYapStore((state) => state.unsubscribeFromGlobalInvites);
   const location = useLocation();
 
   const isAuthRoute = ['/login', '/signup', '/auth', '/forgot-password'].includes(location.pathname);
@@ -30,6 +34,15 @@ const App = () => {
     checkAuth();
     initTheme();
   }, [checkAuth, initTheme]);
+
+  useEffect(() => {
+    if (authUser && socket) {
+      subscribeToGlobalInvites();
+      return () => {
+        unsubscribeFromGlobalInvites();
+      };
+    }
+  }, [authUser, socket, subscribeToGlobalInvites, unsubscribeFromGlobalInvites]);
 
   if (isCheckingAuth && !authUser) {
     return (

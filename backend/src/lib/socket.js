@@ -3,6 +3,7 @@ import http from "http";
 import express from "express";
 import jwt from "jsonwebtoken";
 import * as cookie from "cookie";
+import YapSession from "../models/yapSession.model.js";
 
 const parseCookie = cookie.parseCookie || cookie.parse;
 
@@ -84,10 +85,104 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("disconnect", () => {
+    // ==========================================
+    // Ephemeral Yap Session Socket Event Handlers
+    // ==========================================
+    socket.on("joinYapRoom", async ({ sessionId, ephemeralPublicKey, user }) => {
+        if (!sessionId) return;
+        const roomName = `yap_${sessionId}`;
+        socket.join(roomName);
+        socket.yapSessionId = sessionId;
+        console.log(`User ${userId} joined Yap room ${roomName}`);
+
+        // Announce to other participants in the room that a new peer joined with their ephemeral public key
+        socket.to(roomName).emit("yapParticipantJoined", {
+            userId,
+            socketId: socket.id,
+            ephemeralPublicKey,
+            user,
+            sessionId,
+        });
+    });
+
+    socket.on("yapKeyAnnounce", ({ sessionId, targetUserId, ephemeralPublicKey }) => {
+        if (!sessionId) return;
+        const roomName = `yap_${sessionId}`;
+        
+        if (targetUserId) {
+            const targetSocketId = userSocketMap[targetUserId];
+            if (targetSocketId) {
+                io.to(targetSocketId).emit("yapKeyAnnounce", {
+                    sessionId,
+                    fromUserId: userId,
+                    ephemeralPublicKey,
+                });
+            }
+        } else {
+            socket.to(roomName).emit("yapKeyAnnounce", {
+                sessionId,
+                fromUserId: userId,
+                ephemeralPublicKey,
+            });
+        }
+    });
+
+    socket.on("sendYapMessage", ({ sessionId, messagePayload }) => {
+        if (!sessionId || !messagePayload) return;
+        const roomName = `yap_${sessionId}`;
+        // Zero-trace broadcast to other participants in the room — NEVER saved to DB
+        socket.to(roomName).emit("yapMessage", messagePayload);
+    });
+
+    socket.on("leaveYapRoom", async ({ sessionId }) => {
+        if (!sessionId) return;
+        const roomName = `yap_${sessionId}`;
+        socket.leave(roomName);
+        if (socket.yapSessionId === sessionId) {
+            delete socket.yapSessionId;
+        }
+        console.log(`User ${userId} left Yap room ${roomName}`);
+
+        socket.to(roomName).emit("yapParticipantLeft", {
+            userId,
+            sessionId,
+        });
+    });
+
+    socket.on("disconnect", async () => {
         console.log("User disconnected:", socket.id);
         delete userSocketMap[userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+        // Automatic cleanup if user disconnected while in an active Yap session
+        if (socket.yapSessionId && userId) {
+            try {
+                const sId = socket.yapSessionId;
+                const roomName = `yap_${sId}`;
+                const session = await YapSession.findById(sId);
+                if (session) {
+                    session.activeParticipants = session.activeParticipants.filter(
+                        (p) => p.toString() !== userId.toString()
+                    );
+                    if (session.activeParticipants.length === 0) {
+                        io.to(roomName).emit("yapSessionEnded", {
+                            sessionId: sId,
+                            reason: "All participants left",
+                        });
+                        await YapSession.findByIdAndDelete(sId);
+                    } else {
+                        await session.save();
+                        io.to(roomName).emit("yapParticipantLeft", {
+                            userId,
+                            sessionId: sId,
+                            activeParticipants: session.activeParticipants,
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error during socket disconnect yap cleanup:", err);
+            }
+        }
     });
 });
 

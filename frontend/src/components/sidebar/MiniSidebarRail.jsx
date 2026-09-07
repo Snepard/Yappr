@@ -13,6 +13,7 @@ import {
   Check,
   X,
   Share2,
+  Coffee,
 } from "lucide-react";
 import Tooltip from "../Tooltip";
 import { useThemeStore } from "../../store/useThemeStore";
@@ -24,6 +25,7 @@ const MiniSidebarRail = memo(({
   onOpenInvite,
   onLogout,
   onExpand,
+  onOpenYapSession,
   activeTab,
   setActiveTab,
   groups,
@@ -146,6 +148,22 @@ const MiniSidebarRail = memo(({
           </div>
         )}
       </div>
+
+      {/* Tea Time Button */}
+      <Tooltip label="Tea Time (Disappearing Chat)" position="right">
+        <button
+          onClick={onOpenYapSession}
+          className={`p-2.5 mb-3 transition-all cursor-pointer relative group ${
+            isNeubrutalism
+              ? "bg-[#FFE600] border-2 border-black shadow-[2px_2px_0_#000] hover:bg-[#FF007A] hover:text-white rounded-none active:translate-x-0.5 active:translate-y-0.5"
+              : "bg-slate-900/90 hover:bg-slate-900 text-white border border-orange-500/40 hover:border-orange-500/70 rounded-xl shadow-sm hover:scale-105"
+          }`}
+        >
+          <div className="w-5 h-5 flex items-center justify-center text-orange-400 group-hover:text-orange-300 transition-colors">
+            <Coffee className="w-4 h-4 stroke-[2.5]" />
+          </div>
+        </button>
+      </Tooltip>
 
       <div className={`w-10 h-px mb-3 ${isNeubrutalism ? 'bg-black' : 'bg-sky-100/80'}`} />
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useThemeStore } from "../store/useThemeStore";
+import { useYapStore } from "../store/useYapStore";
 import Sidebar from "../components/Sidebar";
 import NoChatSelected from "../components/NoChatSelected";
 import ChatContainer from "../components/ChatContainer";
@@ -9,17 +10,28 @@ import InvitePanel from "../components/InvitePanel";
 import PendingRequestsPanel from "../components/PendingRequestsPanel";
 import CreateGroupPanel from "../components/CreateGroupPanel";
 import GroupInfoPanel from "../components/GroupInfoPanel";
+import YapLobbyPanel from "../components/YapLobbyPanel";
+import YapChatContainer from "../components/YapChatContainer";
 
 const HomePage = () => {
   const { selectedUser, isInviteOpen, isRequestsOpen } = useChatStore();
   const { selectedGroup, isCreatingGroup, isGroupInfoOpen, setIsGroupInfoOpen } = useGroupStore();
+  const { activeSession, isYapLobbyOpen } = useYapStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const theme = useThemeStore((state) => state.theme);
   const isNeubrutalism = theme === 'neubrutalism';
 
   const showGroupInfo = Boolean(isGroupInfoOpen && selectedGroup);
   const hasActiveChat = Boolean(selectedUser || selectedGroup);
-  const isRightWindowActive = Boolean(hasActiveChat || isInviteOpen || isRequestsOpen || isCreatingGroup || showGroupInfo);
+  const isYapActive = Boolean(activeSession || isYapLobbyOpen);
+  const isRightWindowActive = Boolean(
+    hasActiveChat ||
+    isInviteOpen ||
+    isRequestsOpen ||
+    isCreatingGroup ||
+    showGroupInfo ||
+    isYapActive
+  );
 
   return (
     <>
@@ -49,9 +61,21 @@ const HomePage = () => {
           <div
             className={`flex-1 h-full flex flex-col min-w-0 rounded-none overflow-hidden transition-all duration-300 ease-in-out transform-gpu ${
               isRightWindowActive ? 'flex w-full' : 'hidden md:flex'
-            } ${isNeubrutalism ? 'bg-[#FFFDF0]' : 'bg-white/40 backdrop-blur-xl'}`}
+            } ${
+              isNeubrutalism
+                ? isYapActive
+                  ? 'bg-[#FFFDF0] py-[10px] md:py-[20px] md:px-[20px]'
+                  : 'bg-[#FFFDF0]'
+                : isYapActive
+                ? 'bg-[#080c14] py-[10px] md:py-[20px] md:px-[20px]'
+                : 'bg-white/40 backdrop-blur-xl'
+            }`}
           >
-            {isInviteOpen ? (
+            {activeSession ? (
+              <YapChatContainer />
+            ) : isYapLobbyOpen ? (
+              <YapLobbyPanel />
+            ) : isInviteOpen ? (
               <InvitePanel />
             ) : isRequestsOpen ? (
               <PendingRequestsPanel />

@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useFriendStore } from "../store/useFriendStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useThemeStore } from "../store/useThemeStore";
+import { useYapStore } from "../store/useYapStore";
 import { confirmLogout } from "../lib/confirmToast";
 
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
@@ -22,6 +23,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const isNeubrutalism = theme === "neubrutalism";
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, setIsInviteOpen } = useChatStore();
   const { onlineUsers, authUser, logout } = useAuthStore();
+  const { openYapLobby } = useYapStore();
   const {
     groups,
     getGroups,
@@ -225,6 +227,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         onOpenInvite={() => setIsInviteOpen(true)}
         onLogout={handleLogout}
         onExpand={() => setIsCollapsed(false)}
+        onOpenYapSession={openYapLobby}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         groups={filteredGroups}
@@ -291,6 +294,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         onOpenInvite={() => setIsInviteOpen(true)}
         onLogout={handleLogout}
         onCollapse={() => setIsCollapsed(true)}
+        onOpenYapSession={openYapLobby}
       />
 
       {/* Tabs */}
